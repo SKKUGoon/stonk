@@ -1,7 +1,9 @@
 package main
 
 import (
+	"fmt"
 	util "strategy/util"
+	"time"
 
 	"github.com/joho/godotenv"
 )
@@ -11,40 +13,18 @@ func main() {
 
 	client := util.Default(false)
 	client.UsePrefixFn(client.SetOAuthSecurityCode)
-	client.UseSuffixFn(client.RemoveOAuthSecuritCode)
+	client.UseClosingFn(client.RemoveOAuthSecuritCode)
 
-	client.SetTx(client.TxOverseaAccount)
+	client.SetTx(client.TxOverseaAccountUS)
 	client.Exec()
-	// b, err := client.OAuthWebsocket()
-	// if err != nil {
-	// 	fmt.Println("wrong")
-	// }
-	// fmt.Println(b)
 
-	// srv := "korExec"
+	client.SetTx(client.TxOverseaAccountJP)
+	client.SetTx(client.TxOverseaAccountUS)
 
-	// // Start stream
-	// client.StartStream(srv)
+	fmt.Println("wait 12 seconds first, should execute JP, and US only")
+	time.Sleep(time.Second * 12)
 
-	// // Start read handler
-	// go client.ReadFromSocket(srv)
+	client.Exec()
 
-	// // Start
-	// client.Subscribe(srv, "005930")
-
-	// time.Sleep(time.Second * 60)
-
-	// client.Unsubscribe(srv, "005930")
-
-	// client.CloseStream(srv)
-
-	// Account check
-
-	// ac, bc, err := client.OverseaAccount()
-	// if err != nil {
-	// 	log.Fatalf("error account %v", err)
-	// }
-	// fmt.Println("account header", ac)
-	// fmt.Println("account body", bc)
-
+	client.Close()
 }

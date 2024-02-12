@@ -79,7 +79,6 @@ func (c *KISClient) SetOAuthSecurityCode() error {
 
 	// Parse the response and register security code to the client
 	bytes, _ := io.ReadAll(response.Body)
-	fmt.Println(string(bytes))
 	if err = json.Unmarshal(bytes, &result); err != nil {
 		return errors.New(fmt.Sprintf("failed to register security code: %v", err))
 	} else {
@@ -131,6 +130,10 @@ func (c *KISClient) RemoveOAuthSecuritCode() error {
 		if result.Code != 200 {
 			return errors.New(fmt.Sprintf("failed to remove security code: %s(%v)", result.Message, result.Code))
 		}
+		// Re-Initialize the OAuthKey and OAuthKeyExpire token
+		color.Red("security code removed at %v", time.Now())
+		c.OAuthKey = ""
+		c.OAuthKeyExpire = time.Time{}
 		return nil
 	}
 }
@@ -153,9 +156,9 @@ func (c *KISClient) isOAuthKeyAvailable() bool {
 	}
 
 	if now.After(c.OAuthKeyExpire) {
-		return true
-	} else {
 		return false
+	} else {
+		return true
 	}
 }
 

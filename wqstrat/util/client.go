@@ -31,9 +31,9 @@ type KISClient struct {
 	KeyExpiration time.Time
 
 	// Handlers that are not using any variable
-	preHandlers []HandlerFunc
-	sufHandlers []HandlerFunc
-	handlers    []HandlerFunc
+	preHandlers     []HandlerFunc
+	handlers        []HandlerFunc
+	closingHandlers []HandlerFunc
 
 	isTest bool
 
@@ -72,9 +72,9 @@ func Default(test bool) *KISClient {
 			AppSecret: scrkey,
 		},
 
-		preHandlers: []HandlerFunc{},
-		sufHandlers: []HandlerFunc{},
-		handlers:    []HandlerFunc{}, // Set empty handler function list
+		preHandlers:     []HandlerFunc{},
+		closingHandlers: []HandlerFunc{},
+		handlers:        []HandlerFunc{}, // Set empty handler function list
 
 		isTest:        test,
 		KeyExpiration: expire,
@@ -109,8 +109,8 @@ func (c *KISClient) UsePrefixFn(fn HandlerFunc) {
 	c.preHandlers = append(c.preHandlers, fn)
 }
 
-func (c *KISClient) UseSuffixFn(fn HandlerFunc) {
-	c.sufHandlers = append(c.sufHandlers, fn)
+func (c *KISClient) UseClosingFn(fn HandlerFunc) {
+	c.closingHandlers = append(c.closingHandlers, fn)
 }
 
 func (c *KISClient) SetTx(fn HandlerFunc) {
@@ -120,27 +120,32 @@ func (c *KISClient) SetTx(fn HandlerFunc) {
 func (c *KISClient) Exec() {
 	// Execute all prefix functions - inside the queue
 	// Prefix functions are made with `UsePrefixFn`
-	for _, pf := range c.preHandlers {
+	for i, pf := range c.preHandlers {
 		err := pf()
 		if err != nil {
+			fmt.Printf("err during prefix handler %v: %v\n", i, err)
 			return
 		}
 	}
 
 	// Execute all main functions inside queue
-	for _, f := range c.handlers {
+	for i, f := range c.handlers {
 		err := f()
 		if err != nil {
+			fmt.Printf("err during handler %v: %v\n", i, err)
 			return
 		}
 	}
 
 	// Re-initialize handlers
 	c.handlers = []HandlerFunc{}
+}
 
-	for _, sf := range c.sufHandlers {
+func (c *KISClient) Close() {
+	for i, sf := range c.closingHandlers {
 		err := sf()
 		if err != nil {
+			fmt.Printf("err during suffix handler %v: %v\n", i, err)
 			return
 		}
 	}

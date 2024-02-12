@@ -85,8 +85,8 @@ type OverseaAccountResponseBody struct {
 	ContextAreaNK200 string `json:"ctx_area_nk200"`
 
 	// Details of account
-	OutputOne OverseaAccountResponseBodyOutputOne `json:"output1"`
-	OutputTwo OverseaAccountResponseBodyOutputTwo `json:"output2"`
+	OutputOne []OverseaAccountResponseBodyOutputOne `json:"output1"` // For each stock
+	OutputTwo OverseaAccountResponseBodyOutputTwo   `json:"output2"` // For account in total
 }
 
 type OverseaAccountResponseBodyOutputOne struct {
@@ -120,6 +120,39 @@ type OverseaAccountResponseBodyOutputTwo struct {
 	ForeignCurrencyBuyAmountSumTwo string `json:"frcr_buy_amt_smtl2"`
 }
 
+func (c *KISClient) TxOverseaAccountUS() error {
+	a, b, err := c.overseaAccount(string(UnitedStates), string(UnitedStatesDollar))
+	if err != nil {
+		return err
+	}
+
+	fmt.Println("tx, oversea us", a)
+	fmt.Println("tx, oversea body us", b)
+	return nil
+}
+
+func (c *KISClient) TxOverseaAccountJP() error {
+	a, b, err := c.overseaAccount(string(Tokyo), string(JapaneseYen))
+	if err != nil {
+		return err
+	}
+
+	fmt.Println("tx, oversea jp", a)
+	fmt.Println("tx, oversea body jp", b)
+	return nil
+}
+
+func (c *KISClient) TxOverseaAccountCN() error {
+	a, b, err := c.overseaAccount(string(Shanghai), string(ChineseYuan))
+	if err != nil {
+		return err
+	}
+
+	fmt.Println("tx, oversea cn", a)
+	fmt.Println("tx, oversea body cn", b)
+	return nil
+}
+
 func (c *KISClient) overseaAccountHeader() OverseaAccountRequestHeader {
 	var trId string
 	switch c.isTest {
@@ -142,7 +175,7 @@ func (c *KISClient) overseaAccountHeader() OverseaAccountRequestHeader {
 	return header
 }
 
-func (c *KISClient) overseaAccountBody() (OverseaAccountRequestQuery, error) {
+func (c *KISClient) overseaAccountBody(exchange, currency string) (OverseaAccountRequestQuery, error) {
 	result := OverseaAccountRequestQuery{}
 
 	// Account number
@@ -153,24 +186,13 @@ func (c *KISClient) overseaAccountBody() (OverseaAccountRequestQuery, error) {
 
 	result.AccountNumber = acnt[:8]
 	result.AccountProductCode = acnt[8:]
-	result.OverseaExchange = string(TestNasdaq)             // Test
-	result.TransactionCurrency = string(UnitedStatesDollar) // Test
+	result.OverseaExchange = string(exchange)     // Test
+	result.TransactionCurrency = string(currency) // Test
 
 	return result, nil
 }
 
-func (c *KISClient) TxOverseaAccount() error {
-	a, b, err := c.overseaAccount()
-	if err != nil {
-		return err
-	}
-
-	fmt.Println("tx, oversea", a)
-	fmt.Println("tx, oversea body", b)
-	return nil
-}
-
-func (c *KISClient) overseaAccount() (OverseaAccountResponseHeader, OverseaAccountResponseBody, error) {
+func (c *KISClient) overseaAccount(exchange, currency string) (OverseaAccountResponseHeader, OverseaAccountResponseBody, error) {
 	var (
 		resultHeader OverseaAccountResponseHeader
 		resultBody   OverseaAccountResponseBody
@@ -202,7 +224,7 @@ func (c *KISClient) overseaAccount() (OverseaAccountResponseHeader, OverseaAccou
 	}
 
 	// Create body for new request.
-	if query, err := c.overseaAccountBody(); err == nil {
+	if query, err := c.overseaAccountBody(exchange, currency); err == nil {
 		queryMap, err = structToMap(query)
 		if err != nil {
 			return resultHeader, resultBody, nil
@@ -217,8 +239,6 @@ func (c *KISClient) overseaAccount() (OverseaAccountResponseHeader, OverseaAccou
 	} else {
 		return resultHeader, resultBody, err
 	}
-
-	fmt.Println(request.URL.RawQuery)
 
 	client := &http.Client{}
 	response, err := client.Do(request)
@@ -236,7 +256,7 @@ func (c *KISClient) overseaAccount() (OverseaAccountResponseHeader, OverseaAccou
 
 	// Parse the response body
 	bytes, _ := io.ReadAll(response.Body)
-	fmt.Println(string(bytes))
+
 	if err != nil {
 		return resultHeader, resultBody, err
 	}
