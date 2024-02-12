@@ -12,12 +12,16 @@ func main() {
 	godotenv.Load(".env")
 
 	client := util.Default(false)
+	defer client.Close()
+
+	// Make first transaction
 	client.UsePrefixFn(client.SetOAuthSecurityCode)
 	client.UseClosingFn(client.RemoveOAuthSecuritCode)
 
 	client.SetTx(client.TxOverseaAccountUS)
 	client.Exec()
 
+	// Make second transaction
 	client.SetTx(client.TxOverseaAccountJP)
 	client.SetTx(client.TxOverseaAccountUS)
 
@@ -25,6 +29,4 @@ func main() {
 	time.Sleep(time.Second * 12)
 
 	client.Exec()
-
-	client.Close()
 }

@@ -20,10 +20,26 @@ func setDevState(state string) {
 	}
 }
 
-func New(state string) {
+func Engine(state string) *Business {
 	setDevState(state)
 
 	router := gin.Default()
 	router.Use(corsMiddleware())
 
+	client := util.Default(false)
+	client.UsePrefixFn(client.SetOAuthSecurityCode)
+	client.UseClosingFn(client.RemoveOAuthSecuritCode)
+
+	return &Business{
+		Conn:      router,
+		Brokerage: client,
+	}
+}
+
+func (b *Business) MountService(group *gin.RouterGroup) {
+	group.GET("/account/:region", b.accountOversea)
+}
+
+func (b *Business) Shutdown() {
+	b.Brokerage.Close()
 }
