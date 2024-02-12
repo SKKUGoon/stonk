@@ -26,7 +26,7 @@ var websocketMsgHandler map[string]func(string) error = map[string]func(string) 
 }
 
 type OAuthWebsocketRequest struct {
-	Auth
+	WebsocketAuth
 	GrantType string `json:"grant_type"`
 }
 
@@ -39,8 +39,8 @@ func (c *KISClient) OAuthWebsocket() (OAuthWebsocketResponse, error) {
 
 	// Create request information
 	body := OAuthWebsocketRequest{
-		GrantType: "client_credentials",
-		Auth:      c.UserInfo,
+		GrantType:     "client_credentials",
+		WebsocketAuth: c.UserInfoWS,
 	}
 	bstr, err := json.Marshal(body)
 	if err != nil {
@@ -49,7 +49,7 @@ func (c *KISClient) OAuthWebsocket() (OAuthWebsocketResponse, error) {
 
 	request, err := http.NewRequest(
 		"POST",
-		fmt.Sprintf("%s%s", OAuthForWebsocket, WebsocketUrl),
+		fmt.Sprintf("%s%s", KoreaInvestREST, WebsocketUrl),
 		bytes.NewReader(bstr),
 	)
 	if err != nil {
