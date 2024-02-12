@@ -9,6 +9,8 @@ import (
 	"log"
 	"net/http"
 	"time"
+
+	"github.com/fatih/color"
 )
 
 const (
@@ -38,7 +40,12 @@ type OAuthRemoveSecurityCodeResponse struct {
 	Message string `json:"message"`
 }
 
-func (c *KISClient) OAuthSecurityCode() error {
+func (c *KISClient) SetOAuthSecurityCode() error {
+	if c.isOAuthKeyAvailable() {
+		color.Green("already has security code")
+		return nil
+	}
+
 	result := OAuthSecurityCodeResponse{}
 
 	// Create request information
@@ -137,18 +144,18 @@ func (c *KISClient) setSecurityCode(secCd OAuthSecurityCodeResponse) {
 	c.OAuthKey = secCd.AccessToken
 }
 
-func (c *KISClient) isOAuthKeyAvailable() (bool, error) {
+func (c *KISClient) isOAuthKeyAvailable() bool {
 	now := time.Now()
 
 	// No OAuth key requested in the first place. Emit error
 	if c.OAuthKey == "" {
-		return false, errors.New("no oauth key available in the client")
+		return false
 	}
 
 	if now.After(c.OAuthKeyExpire) {
-		return true, nil
+		return true
 	} else {
-		return false, nil
+		return false
 	}
 }
 

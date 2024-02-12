@@ -159,7 +159,18 @@ func (c *KISClient) overseaAccountBody() (OverseaAccountRequestQuery, error) {
 	return result, nil
 }
 
-func (c *KISClient) OverseaAccount() (OverseaAccountResponseHeader, OverseaAccountResponseBody, error) {
+func (c *KISClient) TxOverseaAccount() error {
+	a, b, err := c.overseaAccount()
+	if err != nil {
+		return err
+	}
+
+	fmt.Println("tx, oversea", a)
+	fmt.Println("tx, oversea body", b)
+	return nil
+}
+
+func (c *KISClient) overseaAccount() (OverseaAccountResponseHeader, OverseaAccountResponseBody, error) {
 	var (
 		resultHeader OverseaAccountResponseHeader
 		resultBody   OverseaAccountResponseBody

@@ -22,8 +22,7 @@ type RESTAuth struct {
 	AppSecret string `json:"appsecret"`
 }
 
-type HandlerFunc func()
-type HandlerChain []HandlerFunc
+type HandlerFunc func() error
 
 type KISClient struct {
 	context.Context
@@ -32,7 +31,9 @@ type KISClient struct {
 	KeyExpiration time.Time
 
 	// Handlers that are not using any variable
-	handlers HandlerChain
+	preHandlers []HandlerFunc
+	sufHandlers []HandlerFunc
+	handlers    []HandlerFunc
 
 	isTest bool
 
@@ -70,18 +71,22 @@ func Default(test bool) *KISClient {
 			AppKey:    appkey,
 			AppSecret: scrkey,
 		},
-		handlers:      []HandlerFunc{}, // Set empty handler function list
+
+		preHandlers: []HandlerFunc{},
+		sufHandlers: []HandlerFunc{},
+		handlers:    []HandlerFunc{}, // Set empty handler function list
+
 		isTest:        test,
 		KeyExpiration: expire,
 		Streams:       map[string]*KISStream{},
 	}
-	if ok := client.checkExpiration(); !ok {
+	if ok := client.apiKeyExpirationCheck(); !ok {
 		return nil
 	}
 	return &client
 }
 
-func (c *KISClient) checkExpiration() bool {
+func (c *KISClient) apiKeyExpirationCheck() bool {
 	// Check for `.env`'s API KEY's availability
 	today := time.Now()
 	left := c.KeyExpiration.Sub(today)
@@ -100,22 +105,43 @@ func (c *KISClient) checkExpiration() bool {
 	}
 }
 
-func (c *KISClient) checkForKeys() {
-	if ok, err := c.isOAuthKeyAvailable(); err != nil && ok {
-
-	}
+func (c *KISClient) UsePrefixFn(fn HandlerFunc) {
+	c.preHandlers = append(c.preHandlers, fn)
 }
 
-func (c *KISClient) ExecuteTransaction() {
-	// Execute all functions inside queue
+func (c *KISClient) UseSuffixFn(fn HandlerFunc) {
+	c.sufHandlers = append(c.sufHandlers, fn)
+}
+
+func (c *KISClient) SetTx(fn HandlerFunc) {
+	c.handlers = append(c.handlers, fn)
+}
+
+func (c *KISClient) Exec() {
+	// Execute all prefix functions - inside the queue
+	// Prefix functions are made with `UsePrefixFn`
+	for _, pf := range c.preHandlers {
+		err := pf()
+		if err != nil {
+			return
+		}
+	}
+
+	// Execute all main functions inside queue
 	for _, f := range c.handlers {
-		f()
+		err := f()
+		if err != nil {
+			return
+		}
 	}
 
 	// Re-initialize handlers
 	c.handlers = []HandlerFunc{}
-}
 
-func (c *KISClient) setTransaction() {
-
+	for _, sf := range c.sufHandlers {
+		err := sf()
+		if err != nil {
+			return
+		}
+	}
 }

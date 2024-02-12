@@ -1,8 +1,6 @@
 package main
 
 import (
-	"fmt"
-	"log"
 	util "strategy/util"
 
 	"github.com/joho/godotenv"
@@ -12,7 +10,11 @@ func main() {
 	godotenv.Load(".env")
 
 	client := util.Default(false)
+	client.UsePrefixFn(client.SetOAuthSecurityCode)
+	client.UseSuffixFn(client.RemoveOAuthSecuritCode)
 
+	client.SetTx(client.TxOverseaAccount)
+	client.Exec()
 	// b, err := client.OAuthWebsocket()
 	// if err != nil {
 	// 	fmt.Println("wrong")
@@ -37,21 +39,12 @@ func main() {
 	// client.CloseStream(srv)
 
 	// Account check
-	err := client.OAuthSecurityCode() // get security code
 
-	if err != nil {
-		fmt.Println("error", err)
-	}
+	// ac, bc, err := client.OverseaAccount()
+	// if err != nil {
+	// 	log.Fatalf("error account %v", err)
+	// }
+	// fmt.Println("account header", ac)
+	// fmt.Println("account body", bc)
 
-	ac, bc, err := client.OverseaAccount()
-	if err != nil {
-		log.Fatalf("error account %v", err)
-	}
-	fmt.Println("account header", ac)
-	fmt.Println("account body", bc)
-
-	err = client.RemoveOAuthSecuritCode()
-	if err != nil {
-		fmt.Println("error", err)
-	}
 }
