@@ -22,8 +22,8 @@ func main() {
 	client.Exec()
 
 	// // Make second transaction
-	// client.SetTx(client.TxOverseaAccountJP)
-	// client.SetTx(client.TxOverseaAccountUS)
+	client.SetTx(client.TxOverseaAccountJP)
+	client.SetTx(client.TxOverseaAccountUS)
 
 	// fmt.Println("wait 12 seconds first, should execute JP, and US only")
 	// time.Sleep(time.Second * 12)
@@ -34,3 +34,5 @@ func main() {
 	}
 	fmt.Println(data)
 }
+
+//

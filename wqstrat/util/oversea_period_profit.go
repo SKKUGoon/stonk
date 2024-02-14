@@ -3,6 +3,7 @@ package util
 import (
 	"log"
 	"os"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -93,6 +94,24 @@ func (c *KISClient) TxOverseaPeriodProfitUS() (interface{}, error) {
 	return body, nil
 }
 
+func (c *KISClient) TxOverseaPeriodProfitJP() (interface{}, error) {
+	_, body, err := c.OverseaPeriodProfit(string(Tokyo), string(JapaneseYen))
+	if err != nil {
+		return body, err
+	}
+
+	return body, nil
+}
+
+func (c *KISClient) TxOverseaPeriodProfitCN() (interface{}, error) {
+	_, body, err := c.OverseaPeriodProfit(string(Shanghai), string(ChineseYuan))
+	if err != nil {
+		return body, err
+	}
+
+	return body, nil
+}
+
 /* Korea Investment API Request - Oversea Account Period profit */
 
 func (c *KISClient) overseaPeriodProfitHeader() OverseaPeriodProfitRequestHeader {
@@ -117,8 +136,7 @@ func (c *KISClient) overseaPeriodProfitHeader() OverseaPeriodProfitRequestHeader
 	return header
 }
 
-func (c *KISClient) overseaPeriodProfitBody(exchange, currency string) OverseaPeriodProfitRequestQuery {
-	result := OverseaPeriodProfitRequestQuery{}
+func (c *KISClient) overseaPeriodProfitBody(exchange, currency string, pastdays int) OverseaPeriodProfitRequestQuery {
 
 	// Account number
 	acnt := os.Getenv("__KIS_ACCOUNT_NUM")
@@ -126,17 +144,25 @@ func (c *KISClient) overseaPeriodProfitBody(exchange, currency string) OverseaPe
 		log.Fatalln("failed to get account number from environment file")
 	}
 
-	result.AccountNumber = acnt[:8]
-	result.AccountProductCode = acnt[8:]
-	result.OverseaExchange = string(exchange)
-	result.CurrencyCode = string(currency)
+	now := time.Now().Format("20060102")
+	past := time.Now().AddDate(0, 0, -1*pastdays).Format("20060102")
+
+	result := OverseaPeriodProfitRequestQuery{
+		AccountNumber:      acnt[:8],
+		AccountProductCode: acnt[8:],
+		OverseaExchange:    string(exchange),
+		CurrencyCode:       string(currency),
+		WonOrForeign:       "01",
+		StartDate:          past,
+		EndDate:            now,
+	}
 
 	return result
 }
 
 func (c *KISClient) OverseaPeriodProfit(exchange, currency string) (OverseaPeriodProfitResponseHeader, OverseaPeriodProfitResponseBody, error) {
 	header := c.overseaPeriodProfitHeader()
-	query := c.overseaPeriodProfitBody(exchange, currency)
+	query := c.overseaPeriodProfitBody(exchange, currency, 30)
 
 	resultHeader, resultBody, err := overseaGETwHB[
 		OverseaPeriodProfitRequestHeader,

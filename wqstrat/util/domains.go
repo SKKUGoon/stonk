@@ -103,7 +103,6 @@ func overseaGETwHB[T any, U any, V any, X any](
 	if bytes, err := io.ReadAll(response.Body); err != nil {
 		return resultHeader, resultBody, err
 	} else {
-		fmt.Println("generic", string(bytes))
 		err = json.Unmarshal(bytes, &resultBody)
 		return resultHeader, resultBody, err
 	}

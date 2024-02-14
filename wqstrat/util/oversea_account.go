@@ -1,10 +1,7 @@
 package util
 
 import (
-	"encoding/json"
-	"errors"
-	"io"
-	"net/http"
+	"log"
 	"os"
 
 	"github.com/google/uuid"
@@ -213,13 +210,13 @@ func (c *KISClient) overseaAccountHeader() OverseaAccountRequestHeader {
 	return header
 }
 
-func (c *KISClient) overseaAccountBody(exchange, currency string) (OverseaAccountRequestQuery, error) {
+func (c *KISClient) overseaAccountBody(exchange, currency string) OverseaAccountRequestQuery {
 	result := OverseaAccountRequestQuery{}
 
 	// Account number
 	acnt := os.Getenv("__KIS_ACCOUNT_NUM")
 	if acnt == "" {
-		return result, errors.New("failed to get account number from environment file")
+		log.Fatalln("failed to get account number from environment file")
 	}
 
 	result.AccountNumber = acnt[:8]
@@ -227,82 +224,25 @@ func (c *KISClient) overseaAccountBody(exchange, currency string) (OverseaAccoun
 	result.OverseaExchange = string(exchange)     // Test
 	result.TransactionCurrency = string(currency) // Test
 
-	return result, nil
+	return result
 }
 
 func (c *KISClient) overseaAccount(exchange, currency string) (OverseaAccountResponseHeader, OverseaAccountResponseBody, error) {
-	var (
-		resultHeader OverseaAccountResponseHeader
-		resultBody   OverseaAccountResponseBody
 
-		headerMap map[string]string
-		queryMap  map[string]string
+	header := c.overseaAccountHeader()
+	query := c.overseaAccountBody(exchange, currency)
+
+	resultHeader, resultBody, err := overseaGETwHB[
+		OverseaAccountRequestHeader,
+		OverseaAccountRequestQuery,
+		OverseaAccountResponseHeader,
+		OverseaAccountResponseBody,
+	](
+		header,
+		query,
+		c.isTest,
+		OverseaAccountUrl,
 	)
 
-	request, err := http.NewRequest(
-		"GET",
-		whereToRequest(c.isTest, OverseaAccountUrl),
-		nil,
-	)
-	if err != nil {
-		return resultHeader, resultBody, err
-	}
-
-	// Create header for new request
-	// Turn struct into map
-	if header := c.overseaAccountHeader(); true {
-		headerMap, err = structToMap(header)
-		if err != nil {
-			return resultHeader, resultBody, nil
-		}
-
-		for k, v := range headerMap {
-			request.Header.Set(k, v)
-		}
-	}
-
-	// Create body for new request.
-	if query, err := c.overseaAccountBody(exchange, currency); err == nil {
-		queryMap, err = structToMap(query)
-		if err != nil {
-			return resultHeader, resultBody, nil
-		}
-
-		// Add query elements
-		q := request.URL.Query()
-		for k, v := range queryMap {
-			q.Add(k, v)
-		}
-		request.URL.RawQuery = q.Encode()
-	} else {
-		return resultHeader, resultBody, err
-	}
-
-	client := &http.Client{}
-	response, err := client.Do(request)
-	if err != nil {
-		return resultHeader, resultBody, err
-	}
-	defer response.Body.Close()
-
-	// Parse the response header
-	resultHeader = OverseaAccountResponseHeader{
-		TransactionID:           response.Header.Get("tr_id"),
-		TransactionIsContinuous: response.Header.Get("tr_cont"),
-		GlobalTransactionUUID:   response.Header.Get("gt_uid"),
-	}
-
-	// Parse the response body
-	bytes, err := io.ReadAll(response.Body)
-
-	if err != nil {
-		return resultHeader, resultBody, err
-	}
-
-	err = json.Unmarshal(bytes, &resultBody)
-	if err != nil {
-		return resultHeader, resultBody, err
-	}
-
-	return resultHeader, resultBody, nil
+	return resultHeader, resultBody, err
 }
