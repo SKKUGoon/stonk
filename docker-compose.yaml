@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  wq-back:
+    build:
+      context: ./wqstrat
+      dockerfile: ./Dockerfile
+    restart: unless-stopped
+    ports:
+      - 10501:10501
+    env_file:
+      - ./wqstrat/wqexec/.env
+    
