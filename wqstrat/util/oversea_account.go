@@ -193,6 +193,7 @@ func accountInfoTable(data OverseaAccountResponseBody) WQAccount {
 
 func (c *KISClient) overseaAccountHeader() OverseaAccountRequestHeader {
 	var trId string
+
 	switch c.isTest {
 	case false:
 		trId = "TTTS3012R"
@@ -202,7 +203,6 @@ func (c *KISClient) overseaAccountHeader() OverseaAccountRequestHeader {
 
 	uid := uuid.New()
 
-	// var overseaAccountHeader map[string]string
 	header := OverseaAccountRequestHeader{
 		RESTAuth:              c.UserInfoREST,
 		Authorization:         c.getBearerAuthorization(),
@@ -248,7 +248,7 @@ func (c *KISClient) overseaAccount(exchange, currency string) (OverseaAccountRes
 		return resultHeader, resultBody, err
 	}
 
-	// Create header for new request.
+	// Create header for new request
 	// Turn struct into map
 	if header := c.overseaAccountHeader(); true {
 		headerMap, err = structToMap(header)
@@ -293,7 +293,7 @@ func (c *KISClient) overseaAccount(exchange, currency string) (OverseaAccountRes
 	}
 
 	// Parse the response body
-	bytes, _ := io.ReadAll(response.Body)
+	bytes, err := io.ReadAll(response.Body)
 
 	if err != nil {
 		return resultHeader, resultBody, err
