@@ -3,7 +3,6 @@ package util
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io"
 	"net/http"
 	"os"
@@ -95,7 +94,7 @@ type OverseaAccountResponseBodyOutputOne struct {
 	OverseaProductNumber          string `json:"ovrs_pdno"`
 	OverseaItemName               string `json:"ovrs_item_name"`
 	ForeignCurrencyEvaluatedPnl   string `json:"frcr_evlu_pfls_amt"`
-	EvaluatedPnl                  string `json:"evlu_pfls_rt"`
+	EvaluatedPnlRate              string `json:"evlu_pfls_rt"`
 	AveragePurchasePrice          string `json:"pchs_avg_pric"`
 	OverseaQuantity               string `json:"ovrs_cblc_qty"`
 	SellOrderPossibleQuantity     string `json:"ord_psbl_qty"`
@@ -113,45 +112,84 @@ type OverseaAccountResponseBodyOutputTwo struct {
 	OverseaRealizedPnlOne          string `json:"ovrs_rlzt_pfls_amt"`
 	OverseaTotalPnl                string `json:"ovrs_tot_pfls"`
 	RealizedEarningsReturn         string `json:"rlzt_erng_rt"`
-	TotalEvaluatedPnl              string `json:"tot_evlu_pfls_amt"`
+	TotalEvaluatedBalance          string `json:"tot_evlu_pfls_amt"`
 	TotalProfitReturn              string `json:"tot_pftrt"`
 	ForeignCurrencyBuyAmountSumOne string `json:"frcr_buy_amt_smtl1"`
 	OverseaRealizedPnlTwo          string `json:"ovrs_rlzt_pfls_amt2"`
 	ForeignCurrencyBuyAmountSumTwo string `json:"frcr_buy_amt_smtl2"`
 }
 
-func (c *KISClient) TxOverseaAccountUS() error {
-	a, b, err := c.overseaAccount(string(UnitedStates), string(UnitedStatesDollar))
-	if err != nil {
-		return err
-	}
-
-	fmt.Println("tx, oversea us", a)
-	fmt.Println("tx, oversea body us", b)
-	return nil
+type WQAccount struct {
+	FxBalance  string             `json:"fxbalance"`
+	FxTotalPnl string             `json:"fxpnl"`
+	Stocks     []accountStockInfo `json:"stocks"`
 }
 
-func (c *KISClient) TxOverseaAccountJP() error {
-	a, b, err := c.overseaAccount(string(Tokyo), string(JapaneseYen))
-	if err != nil {
-		return err
-	}
-
-	fmt.Println("tx, oversea jp", a)
-	fmt.Println("tx, oversea body jp", b)
-	return nil
+type accountStockInfo struct {
+	Code     string `json:"code"`
+	Name     string `json:"name"`
+	FxPnl    string `json:"fxpnl"`
+	PnlRate  string `json:"pnlrate"`
+	AvgPrice string `json:"avgprc"`
+	Quantity string `json:"qty"`
+	NotSold  string `json:"notsold"`
 }
 
-func (c *KISClient) TxOverseaAccountCN() error {
-	a, b, err := c.overseaAccount(string(Shanghai), string(ChineseYuan))
+func (c *KISClient) TxOverseaAccountUS() (interface{}, error) {
+	_, body, err := c.overseaAccount(string(UnitedStates), string(UnitedStatesDollar))
 	if err != nil {
-		return err
+		return body, err
 	}
 
-	fmt.Println("tx, oversea cn", a)
-	fmt.Println("tx, oversea body cn", b)
-	return nil
+	// Not using header information for now
+	return accountInfoTable(body), nil
 }
+
+func (c *KISClient) TxOverseaAccountJP() (interface{}, error) {
+	_, body, err := c.overseaAccount(string(Tokyo), string(JapaneseYen))
+	if err != nil {
+		return body, err
+	}
+
+	// Not using header information for now
+	return accountInfoTable(body), nil
+}
+
+func (c *KISClient) TxOverseaAccountCN() (interface{}, error) {
+	_, body, err := c.overseaAccount(string(Shanghai), string(ChineseYuan))
+	if err != nil {
+		return body, err
+	}
+
+	// Not using header information for now
+	return accountInfoTable(body), nil
+}
+
+func accountInfoTable(data OverseaAccountResponseBody) WQAccount {
+	result := WQAccount{
+		FxBalance:  data.OutputTwo.TotalEvaluatedBalance,
+		FxTotalPnl: data.OutputTwo.OverseaTotalPnl,
+		Stocks:     []accountStockInfo{},
+	}
+
+	for _, stock := range data.OutputOne {
+		cleaned := accountStockInfo{
+			Code:     stock.OverseaProductNumber,
+			Name:     stock.OverseaItemName,
+			FxPnl:    stock.ForeignCurrencyEvaluatedPnl,
+			PnlRate:  stock.EvaluatedPnlRate,
+			AvgPrice: stock.AveragePurchasePrice,
+			Quantity: stock.OverseaQuantity,
+			NotSold:  stock.SellOrderPossibleQuantity,
+		}
+
+		result.Stocks = append(result.Stocks, cleaned)
+	}
+
+	return result
+}
+
+/* Korea Investment API Request - Oversea Account */
 
 func (c *KISClient) overseaAccountHeader() OverseaAccountRequestHeader {
 	var trId string

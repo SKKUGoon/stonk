@@ -40,10 +40,10 @@ type OAuthRemoveSecurityCodeResponse struct {
 	Message string `json:"message"`
 }
 
-func (c *KISClient) SetOAuthSecurityCode() error {
+func (c *KISClient) SetOAuthSecurityCode() (any, error) {
 	if c.isOAuthKeyAvailable() {
 		color.Green("already has security code")
-		return nil
+		return nil, nil
 	}
 
 	result := OAuthSecurityCodeResponse{}
@@ -55,7 +55,7 @@ func (c *KISClient) SetOAuthSecurityCode() error {
 	}
 	bstr, err := json.Marshal(body)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	request, err := http.NewRequest(
@@ -64,7 +64,7 @@ func (c *KISClient) SetOAuthSecurityCode() error {
 		bytes.NewReader(bstr),
 	)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	// Set header
@@ -80,17 +80,17 @@ func (c *KISClient) SetOAuthSecurityCode() error {
 	// Parse the response and register security code to the client
 	bytes, _ := io.ReadAll(response.Body)
 	if err = json.Unmarshal(bytes, &result); err != nil {
-		return errors.New(fmt.Sprintf("failed to register security code: %v", err))
+		return nil, errors.New(fmt.Sprintf("failed to register security code: %v", err))
 	} else {
 		c.setSecurityCode(result)
-		return nil
+		return nil, nil
 	}
 }
 
-func (c *KISClient) RemoveOAuthSecuritCode() error {
+func (c *KISClient) RemoveOAuthSecuritCode() (any, error) {
 	if c.OAuthKey == "" {
 		// No OAuthKey to remove
-		return nil
+		return nil, nil
 	}
 
 	result := OAuthRemoveSecurityCodeResponse{}
@@ -102,7 +102,7 @@ func (c *KISClient) RemoveOAuthSecuritCode() error {
 	}
 	bstr, err := json.Marshal(body)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	request, err := http.NewRequest(
@@ -111,7 +111,7 @@ func (c *KISClient) RemoveOAuthSecuritCode() error {
 		bytes.NewReader(bstr),
 	)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	request.Header.Set("content-type", "application/json; utf-8")
 
@@ -125,16 +125,16 @@ func (c *KISClient) RemoveOAuthSecuritCode() error {
 	// Parse the result
 	bytes, _ := io.ReadAll(response.Body)
 	if err = json.Unmarshal(bytes, &result); err != nil {
-		return errors.New(fmt.Sprintf("failed to get appropriate response removing security code: %v", err))
+		return nil, errors.New(fmt.Sprintf("failed to get appropriate response removing security code: %v", err))
 	} else {
 		if result.Code != 200 {
-			return errors.New(fmt.Sprintf("failed to remove security code: %s(%v)", result.Message, result.Code))
+			return nil, errors.New(fmt.Sprintf("failed to remove security code: %s(%v)", result.Message, result.Code))
 		}
 		// Re-Initialize the OAuthKey and OAuthKeyExpire token
 		color.Red("security code removed at %v", time.Now())
 		c.OAuthKey = ""
 		c.OAuthKeyExpire = time.Time{}
-		return nil
+		return nil, nil
 	}
 }
 

@@ -14,7 +14,17 @@ func (b *Business) accountKorea() {
 func (b *Business) accountOversea(ctx *gin.Context) {
 	// Client's request parsing
 	region := ctx.Param("region")
-	defer b.Brokerage.Exec()
+	defer func() {
+		data, err := b.Brokerage.Exec()
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{
+				"message": "failed to execute brokerage, function queue not have been cleaned",
+			})
+			return
+		}
+
+		ctx.JSON(http.StatusOK, data)
+	}()
 
 	switch strings.ToLower(region) {
 	case "jp":

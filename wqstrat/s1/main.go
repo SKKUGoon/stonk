@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	util "strategy/util"
 	"time"
 
@@ -28,5 +29,9 @@ func main() {
 	fmt.Println("wait 12 seconds first, should execute JP, and US only")
 	time.Sleep(time.Second * 12)
 
-	client.Exec()
+	data, err := client.Exec()
+	if err != nil {
+		log.Fatalf("failed to execute client function queue. Queue is not cleaned: %v", err)
+	}
+	fmt.Println(data)
 }
