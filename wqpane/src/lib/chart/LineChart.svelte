@@ -77,6 +77,7 @@
                 data: [],
                 backgroundColor: 'rgb(255, 99, 132)',
                 borderColor: 'rgb(255, 99, 132)',
+                lineTension: 0.4,  // Works fine
               },
             ],
           },
