@@ -1,40 +1,31 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import Grid from "gridjs-svelte";
+  import type { account } from "./type";
 
 
-  type account = {
-    fxbalance: string;
-    fxpnl: string;
-    stocks: accountStocks[];
-  };
-
-  type accountStocks = {
-    code: string; // AAPL
-    name: string; // 애플
-
-    /* Below fields are actually numbers, but for precision turned into string */ 
-
-    fxpnl:   string; // 1.74 USD
-    pnlrate: string; // percentage
-    avgprc:  string; 
-    qty:     string;
-    notsold: string;
-  }
-
-  const unitedStatesAccountUrl = "http://0.0.0.0:10501/api/v1/account/us";
-  let respData: { [ key: string ]: account };
+  export let accnt: { [ key: string ]: account } | undefined;
+  export let accntBal: number;
 
   let accntCol: { name: string }[] = [];
   let accntDat: string[][] = [];
   let stockCol: { name: string }[] = [];
   let stockDat: string[][] = [];
 
+  const trimZeroRe = /0+$/;
+
+  const accountBalance = (data: account) => {
+    return +data.fxbalance;
+  }
+
   const accountTable = (data: account) => {
     const columns = ['Total Balance', 'Pnl(Estimate)']
       .map((str) => { return { name: str } });
 
-    const tabledata = [[ `${data.fxbalance}$`, `${data.fxpnl}$` ]];
+    const tabledata = [[ 
+      `${data.fxbalance.replace(trimZeroRe, "")} $`, 
+      `${data.fxpnl.replace(trimZeroRe, "")} $` 
+    ]];
 
     return { columns, tabledata };
   }
@@ -48,8 +39,8 @@
     for (let stock of data.stocks) {
       tabledata.push([
         stock.code, 
-        `${stock.fxpnl}$(${stock.pnlrate}%)`,
-        `${stock.avgprc}$`,
+        `${stock.fxpnl.replace(trimZeroRe, "")}$ (${stock.pnlrate.replace(trimZeroRe, "")}%)`,
+        `${stock.avgprc.replace(trimZeroRe, "")}$`,
         stock.qty,
       ]);
     }
@@ -57,27 +48,24 @@
     return { columns, tabledata };
   }
 
-  onMount(async () => {
-    const response = await fetch(unitedStatesAccountUrl);
-    if (response.ok) {
-      respData = await response.json();
-      
-      let { columns: sc, tabledata: sd } = stockTable(respData['payload0']);
-      stockCol = sc;
-      stockDat = sd;
+  $: if (accnt && "payload0" in accnt) {
+    let { columns: sc, tabledata: sd } = stockTable(accnt['payload0']);
+    stockCol = sc;
+    stockDat = sd;
 
-      let { columns: ac, tabledata: ad } = accountTable(respData['payload0']);
-      accntCol = ac;
-      accntDat = ad;
-    } else {
-      console.error("failed to fetch data", response.statusText);
-    }
-  });
+    let { columns: ac, tabledata: ad } = accountTable(accnt['payload0']);
+    accntCol = ac;
+    accntDat = ad;
+
+    accntBal = accountBalance(accnt['payload0']);
+  }
+
+  onMount(async () => {});
 </script>
 
 <style global>
-    @import "https://cdn.jsdelivr.net/npm/gridjs/dist/theme/mermaid.min.css";
-  </style>
+  @import "https://cdn.jsdelivr.net/npm/gridjs/dist/theme/mermaid.min.css";
+</style>
 
 <div>
   <Grid data={accntDat} columns={accntCol} />
