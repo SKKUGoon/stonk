@@ -152,10 +152,12 @@ func (c *KISClient) isOAuthKeyAvailable() bool {
 
 	// No OAuth key requested in the first place. Emit error
 	if c.OAuthKey == "" {
+		color.Red("OAuthKey missing")
 		return false
 	}
 
 	if now.After(c.OAuthKeyExpire) {
+		color.Red("OAuthKey expired")
 		return false
 	} else {
 		return true

@@ -162,7 +162,7 @@ func (c *KISClient) overseaPeriodProfitBody(exchange, currency string, pastdays 
 
 func (c *KISClient) OverseaPeriodProfit(exchange, currency string) (OverseaPeriodProfitResponseHeader, OverseaPeriodProfitResponseBody, error) {
 	header := c.overseaPeriodProfitHeader()
-	query := c.overseaPeriodProfitBody(exchange, currency, 30)
+	query := c.overseaPeriodProfitBody(exchange, currency, 90)
 
 	resultHeader, resultBody, err := overseaGETwHB[
 		OverseaPeriodProfitRequestHeader,
