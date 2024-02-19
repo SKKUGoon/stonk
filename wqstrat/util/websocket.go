@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -18,7 +17,7 @@ import (
 const WebsocketUrl string = "/oauth2/Approval"
 
 var websocketPath map[string]string = map[string]string{
-	"korExec": ExecutedUrl,
+	"korExec": KorOrderExecutedUrl,
 }
 
 var websocketMsgHandler map[string]func(string) error = map[string]func(string) error{
@@ -73,7 +72,7 @@ func (c *KISClient) StartStream(service string) error {
 	// Generate websocket connection URL - for stream
 	path, ok := websocketPath[service]
 	if !ok {
-		return errors.New(fmt.Sprintf("failed to get path for service %s", service))
+		return fmt.Errorf("failed to get path for service %s", service)
 	}
 
 	// Create URL and create connection client

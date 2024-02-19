@@ -3,7 +3,6 @@ package util
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -80,7 +79,7 @@ func (c *KISClient) SetOAuthSecurityCode() (any, error) {
 	// Parse the response and register security code to the client
 	bytes, _ := io.ReadAll(response.Body)
 	if err = json.Unmarshal(bytes, &result); err != nil {
-		return nil, errors.New(fmt.Sprintf("failed to register security code: %v", err))
+		return nil, fmt.Errorf("failed to register security code: %v", err)
 	} else {
 		c.setSecurityCode(result)
 		return nil, nil
@@ -125,10 +124,10 @@ func (c *KISClient) RemoveOAuthSecuritCode() (any, error) {
 	// Parse the result
 	bytes, _ := io.ReadAll(response.Body)
 	if err = json.Unmarshal(bytes, &result); err != nil {
-		return nil, errors.New(fmt.Sprintf("failed to get appropriate response removing security code: %v", err))
+		return nil, fmt.Errorf("failed to get appropriate response removing security code: %v", err)
 	} else {
 		if result.Code != 200 {
-			return nil, errors.New(fmt.Sprintf("failed to remove security code: %s(%v)", result.Message, result.Code))
+			return nil, fmt.Errorf("failed to remove security code: %s(%v)", result.Message, result.Code)
 		}
 		// Re-Initialize the OAuthKey and OAuthKeyExpire token
 		color.Red("security code removed at %v", time.Now())

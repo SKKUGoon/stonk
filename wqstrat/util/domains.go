@@ -24,11 +24,15 @@ const (
 )
 
 const (
-	ExecutedUrl = "/tryitout/H0STCNT0"
+	KorOrderExecutedUrl     = "/tryitout/H0STCNT0"
+	OverseaOrderExecutedUrl = "/tryitout/HDFSCNT0"
 )
 
 const (
-	ExecutedTxID = "H0STCNT0"
+	// Body `tr_id` value for stream request
+
+	KorOrderExecutedTxID     = "H0STCNT0"
+	OverseaOrderExecutedTxID = "HDFSCNT0"
 )
 
 func whereToRequest(test bool, url string) string {
@@ -70,6 +74,9 @@ func overseaGETwHB[T any, U any, V any, X any](
 	)
 
 	req, err := http.NewRequest("GET", whereToRequest(test, url), nil)
+	if err != nil {
+		return resultHeader, resultBody, err
+	}
 
 	// Set Header
 	headerMap, err = structToMap(requestheader)

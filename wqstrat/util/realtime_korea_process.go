@@ -1,7 +1,6 @@
 package util
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 )
@@ -9,7 +8,7 @@ import (
 func korExecMessage(msg string) error {
 	strs := strings.Split(msg, "|")
 	if len(strs) < 4 {
-		return errors.New(fmt.Sprintf("wrong message string input %s", msg))
+		return fmt.Errorf("wrong message string input %s", msg)
 	}
 
 	executeData := strings.Split(strs[3], "^")

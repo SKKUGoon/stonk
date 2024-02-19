@@ -1,7 +1,6 @@
 package util
 
 import (
-	"errors"
 	"fmt"
 )
 
@@ -55,7 +54,7 @@ func (c *KISClient) Subscribe(service, stockCode string) error {
 	// Check if KISClient exists
 	client, ok := c.Streams[service]
 	if !ok {
-		return errors.New(fmt.Sprintf("no stream found for service %s", service))
+		return fmt.Errorf("no stream found for service %s", service)
 	}
 
 	// Create message
@@ -68,7 +67,7 @@ func (c *KISClient) Subscribe(service, stockCode string) error {
 		Header: header,
 		Body: rtExecBody{
 			Input: rtExecInput{
-				TransactionID: ExecutedTxID,
+				TransactionID: KorOrderExecutedTxID,
 				StockCode:     stockCode,
 			},
 		},
@@ -86,7 +85,7 @@ func (c *KISClient) Unsubscribe(service, stockCode string) error {
 	// Check if KISClient exists
 	client, ok := c.Streams[service]
 	if !ok {
-		return errors.New(fmt.Sprintf("no stream found for service %s", service))
+		return fmt.Errorf("no stream found for service %s", service)
 	}
 
 	// Create unsubscribing message
@@ -99,7 +98,7 @@ func (c *KISClient) Unsubscribe(service, stockCode string) error {
 		Header: header,
 		Body: rtExecBody{
 			Input: rtExecInput{
-				TransactionID: ExecutedTxID,
+				TransactionID: KorOrderExecutedTxID,
 				StockCode:     stockCode,
 			},
 		},
