@@ -17,7 +17,11 @@ import (
 const WebsocketUrl string = "/oauth2/Approval"
 
 var websocketPath map[string]string = map[string]string{
+	// Korean market service
 	"korExec": KorOrderExecutedUrl,
+
+	// Oversea market service
+	"overseaExec": OverseaOrderExecutedUrl,
 }
 
 var websocketMsgHandler map[string]func(string) error = map[string]func(string) error{
@@ -118,7 +122,12 @@ func (c *KISClient) ReadFromSocket(service string) {
 			if err != nil {
 				log.Printf("failed reading from websocket: %v", err)
 			}
-			websocketMsgHandler[service](string(message))
+
+			if fn, ok := websocketMsgHandler[service]; ok {
+				fn(string(message))
+			} else {
+				fmt.Println("no handlers yet", string(message))
+			}
 		}
 	}
 }
