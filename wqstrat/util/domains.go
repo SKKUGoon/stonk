@@ -56,18 +56,41 @@ func structToMap(s interface{}) (map[string]string, error) {
 	return mapFromStruct, err
 }
 
+type OverseaGetRequestHeader struct {
+	RESTAuth
+	ContentType           string `json:"content-type,omitempty"`
+	Authorization         string `json:"authorization"`
+	PersonalSecurityKey   string `json:"personalseckey,omitempty"` // Essential for corporate client
+	TransactionID         string `json:"tr_id"`
+	TransactionContinued  string `json:"tr_cont,omitempty"`
+	CustomerType          string `json:"custtype,omitempty"` // B for corporate client, P for individual
+	SeqNo                 string `json:"seq_no,omitempty"`   // Essential for corporate client
+	MacAddress            string `json:"mac_address,omitempty"`
+	PhoneNumber           string `json:"phone_number,omitempty"`
+	IPAddress             string `json:"ip_addr,omitempty"` // Essential for corporate client
+	HashKey               string `json:"hashkey,omitempty"`
+	GlobalTransactionUUID string `json:"gt_uid,omitempty"`
+}
+
+type OverseaGetResponseHeader struct {
+	ContentType             string `json:"content-type"`
+	TransactionID           string `json:"tr_id"`
+	TransactionIsContinuous string `json:"tr_cont"`
+	GlobalTransactionUUID   string `json:"gt_uid"`
+}
+
 // Oversea
 // REST "GET" Request with
-// Header[T] and Body[U]
-func overseaGETwHB[T any, U any, V any, X any](
-	requestheader T,
-	requestquery U,
+// RequestBody[T] and ResponseBody[U]
+func overseaGETwHB[T any, U any](
+	requestheader OverseaGetRequestHeader,
+	requestquery T,
 	test bool,
 	url string,
-) (V, X, error) {
+) (OverseaGetResponseHeader, U, error) {
 	var (
-		resultHeader V
-		resultBody   X
+		resultHeader OverseaGetResponseHeader
+		resultBody   U
 
 		headerMap map[string]string
 		queryMap  map[string]string

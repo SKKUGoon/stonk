@@ -2,6 +2,31 @@ package util
 
 import (
 	"fmt"
+	"strings"
+)
+
+type DayTradeOrNightTrade string
+
+const (
+	// (To Korean) day trading
+	USDayTrade DayTradeOrNightTrade = "D"
+
+	// (To Korean) night trading - US real time
+	USNightTrade DayTradeOrNightTrade = "R"
+)
+
+type OverseaExchangeRT string
+
+const (
+	NewYorkRT  OverseaExchangeRT = "NYS"
+	NasdaqRT   OverseaExchangeRT = "NAS"
+	AmexRT     OverseaExchangeRT = "AMS"
+	TokyoRT    OverseaExchangeRT = "TSE"
+	HongKongRT OverseaExchangeRT = "HKS"
+	ShanghaiRT OverseaExchangeRT = "SHS"
+	ShenZhenRT OverseaExchangeRT = "SZS"
+	HochiminRT OverseaExchangeRT = "HSX"
+	HanoiRT    OverseaExchangeRT = "HNX"
 )
 
 type rtExecRequestMessage struct {
@@ -48,6 +73,41 @@ func (c *KISClient) createRTExecHeader(register bool) (rtExecHeader, error) {
 	}
 
 	return result, nil
+}
+
+func overseaSubscribeCode(dayOrNight DayTradeOrNightTrade, exchange OverseaExchangeRT, stockCode string) string {
+	return strings.ToUpper(fmt.Sprintf("%s%s%s", dayOrNight, exchange, stockCode))
+}
+
+func (c *KISClient) SubscribeOversea(service, dayOrNight, exchange, stock string) error {
+	// Check if KISClient exists
+	client, ok := c.Streams[service]
+	if !ok {
+		return fmt.Errorf("no stream found for service %s", service)
+	}
+
+	// Create message
+	header, err := c.createRTExecHeader(true)
+	if err != nil {
+		return err
+	}
+
+	msg := rtExecRequestMessage{
+		Header: header,
+		Body: rtExecBody{
+			Input: rtExecInput{
+				TransactionID: OverseaOrderExecutedTxID,
+				StockCode:     overseaSubscribeCode(DayTradeOrNightTrade(dayOrNight), OverseaExchangeRT(exchange), stock),
+			},
+		},
+	}
+
+	// Send message
+	if err = client.Conn.WriteJSON(msg); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (c *KISClient) Subscribe(service, stockCode string) error {

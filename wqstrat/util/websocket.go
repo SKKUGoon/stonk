@@ -26,6 +26,8 @@ var websocketPath map[string]string = map[string]string{
 
 var websocketMsgHandler map[string]func(string) error = map[string]func(string) error{
 	"korExec": korExecMessage,
+
+	"overseaExec": overseaExecMessage,
 }
 
 type OAuthWebsocketRequest struct {
@@ -123,10 +125,12 @@ func (c *KISClient) ReadFromSocket(service string) {
 				log.Printf("failed reading from websocket: %v", err)
 			}
 
+			// Attach handlers to the string to process messages
 			if fn, ok := websocketMsgHandler[service]; ok {
 				fn(string(message))
 			} else {
-				fmt.Println("no handlers yet", string(message))
+				fmt.Printf("no handlers for service %s", service)
+				fmt.Println(string(message))
 			}
 		}
 	}

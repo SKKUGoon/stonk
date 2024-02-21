@@ -39,38 +39,15 @@ const (
 	VietnameseDong     OverseaCurrency = "VND"
 )
 
-type OverseaAccountRequestHeader struct {
-	RESTAuth
-	ContentType           string `json:"content-type,omitempty"`
-	Authorization         string `json:"authorization"`
-	PersonalSecurityKey   string `json:"personalseckey,omitempty"` // Essential for corporate client
-	TransactionID         string `json:"tr_id"`                    // TTTS3012R for Main VTTS3012R for Test
-	TransactionContinued  string `json:"tr_cont,omitempty"`
-	CustomerType          string `json:"custtype,omitempty"` // B for corporate client, P for individual
-	SeqNo                 string `json:"seq_no,omitempty"`   // Essential for corporate client
-	MacAddress            string `json:"mac_address,omitempty"`
-	PhoneNumber           string `json:"phone_number,omitempty"`
-	IPAddress             string `json:"ip_addr,omitempty"` // Essential for corporate client
-	HashKey               string `json:"hashkey,omitempty"`
-	GlobalTransactionUUID string `json:"gt_uid,omitempty"`
-}
-
 type OverseaAccountRequestQuery struct {
-	AccountNumber       string `json:"CANO"`
-	AccountProductCode  string `json:"ACNT_PRDT_CD"`
-	OverseaExchange     string `json:"OVRS_EXCG_CD"`
-	TransactionCurrency string `json:"TR_CRCY_CD"`
+	AccountNumber      string `json:"CANO"`
+	AccountProductCode string `json:"ACNT_PRDT_CD"`
+	OverseaExchange    string `json:"OVRS_EXCG_CD"`
+	Currency           string `json:"TR_CRCY_CD"`
 
 	// Not Implemented yet
 	ContextAreaFK200 string `json:"CTX_AREA_FK200"`
 	ContextAreaNK200 string `json:"CTX_AREA_NK200"`
-}
-
-type OverseaAccountResponseHeader struct {
-	ContentType             string `json:"content-type"`
-	TransactionID           string `json:"tr_id"`
-	TransactionIsContinuous string `json:"tr_cont"`
-	GlobalTransactionUUID   string `json:"gt_uid"`
 }
 
 type OverseaAccountResponseBody struct {
@@ -81,36 +58,39 @@ type OverseaAccountResponseBody struct {
 	ContextAreaNK200 string `json:"ctx_area_nk200"`
 
 	// Details of account
-	OutputOne []OverseaAccountResponseBodyOutputOne `json:"output1"` // For each stock
-	OutputTwo OverseaAccountResponseBodyOutputTwo   `json:"output2"` // For account in total
+	DetailStocks  []OverseaAccountResponseBodyOutputOne `json:"output1"` // For each stock
+	DetailAccount OverseaAccountResponseBodyOutputTwo   `json:"output2"` // For account in total
 }
 
 type OverseaAccountResponseBodyOutputOne struct {
-	AccountNumber                 string `json:"cano"`
-	AccountProductCode            string `json:"acnt_prdt_cd"`
-	OverseaProductNumber          string `json:"ovrs_pdno"`
-	OverseaItemName               string `json:"ovrs_item_name"`
-	ForeignCurrencyEvaluatedPnl   string `json:"frcr_evlu_pfls_amt"`
-	EvaluatedPnlRate              string `json:"evlu_pfls_rt"`
-	AveragePurchasePrice          string `json:"pchs_avg_pric"`
-	OverseaQuantity               string `json:"ovrs_cblc_qty"`
-	SellOrderPossibleQuantity     string `json:"ord_psbl_qty"`
-	ForeignCurrencyPurchaseAmount string `json:"frcr_pchs_amt1"`
-	OverseaStockEvaluatedAmount   string `json:"ovrs_stck_evlu_amt"`
-	NowPrice                      string `json:"now_pric2"`
-	TransactionCurrencyCode       string `json:"tr_crcy_cd"`
-	OverseaExchangeCode           string `json:"ovrs_excg_cd"`
-	LoanTypeCode                  string `json:"loan_type_cd"`
-	LoanDate                      string `json:"loan_dt"`
-	LoanExpireDate                string `json:"expd_dt"`
+	AccountNumber      string `json:"cano"`
+	AccountProductCode string `json:"acnt_prdt_cd"`
+
+	StockCode            string `json:"ovrs_pdno"`
+	StockName            string `json:"ovrs_item_name"`
+	PnlFx                string `json:"frcr_evlu_pfls_amt"`
+	PnlRate              string `json:"evlu_pfls_rt"`
+	AveragePurchasePrice string `json:"pchs_avg_pric"`
+	Quantity             string `json:"ovrs_cblc_qty"`
+	QuantityAvailable    string `json:"ord_psbl_qty"`
+	PurchaseBalanceFx    string `json:"frcr_pchs_amt1"`
+	EvaluateBalanceFx    string `json:"ovrs_stck_evlu_amt"`
+	CurrentPrice         string `json:"now_pric2"`
+	Currency             string `json:"tr_crcy_cd"`
+	OverseaExchange      string `json:"ovrs_excg_cd"`
+
+	LoanType   string `json:"loan_type_cd"`
+	LoanDate   string `json:"loan_dt"`
+	LoanExpire string `json:"expd_dt"`
 }
 
 type OverseaAccountResponseBodyOutputTwo struct {
-	OverseaRealizedPnlOne          string `json:"ovrs_rlzt_pfls_amt"`
-	OverseaTotalPnl                string `json:"ovrs_tot_pfls"`
-	RealizedEarningsReturn         string `json:"rlzt_erng_rt"`
-	TotalEvaluatedBalance          string `json:"tot_evlu_pfls_amt"`
-	TotalProfitReturn              string `json:"tot_pftrt"`
+	RealizedPnl     string `json:"ovrs_rlzt_pfls_amt"`
+	EvaluatePnl     string `json:"ovrs_tot_pfls"`
+	RealizedReturn  string `json:"rlzt_erng_rt"`
+	EvaluateBalance string `json:"tot_evlu_pfls_amt"`
+	PnlRate         string `json:"tot_pftrt"`
+
 	ForeignCurrencyBuyAmountSumOne string `json:"frcr_buy_amt_smtl1"`
 	OverseaRealizedPnlTwo          string `json:"ovrs_rlzt_pfls_amt2"`
 	ForeignCurrencyBuyAmountSumTwo string `json:"frcr_buy_amt_smtl2"`
@@ -164,20 +144,20 @@ func (c *KISClient) TxOverseaAccountCN() (interface{}, error) {
 
 func accountInfoTable(data OverseaAccountResponseBody) WQAccount {
 	result := WQAccount{
-		FxBalance:  data.OutputTwo.TotalEvaluatedBalance,
-		FxTotalPnl: data.OutputTwo.OverseaTotalPnl,
+		FxBalance:  data.DetailAccount.EvaluateBalance,
+		FxTotalPnl: data.DetailAccount.EvaluatePnl,
 		Stocks:     []accountStockInfo{},
 	}
 
-	for _, stock := range data.OutputOne {
+	for _, stock := range data.DetailStocks {
 		cleaned := accountStockInfo{
-			Code:     stock.OverseaProductNumber,
-			Name:     stock.OverseaItemName,
-			FxPnl:    stock.ForeignCurrencyEvaluatedPnl,
-			PnlRate:  stock.EvaluatedPnlRate,
+			Code:     stock.StockCode,
+			Name:     stock.StockName,
+			FxPnl:    stock.PnlFx,
+			PnlRate:  stock.PnlRate,
 			AvgPrice: stock.AveragePurchasePrice,
-			Quantity: stock.OverseaQuantity,
-			NotSold:  stock.SellOrderPossibleQuantity,
+			Quantity: stock.Quantity,
+			NotSold:  stock.QuantityAvailable,
 		}
 
 		result.Stocks = append(result.Stocks, cleaned)
@@ -188,7 +168,7 @@ func accountInfoTable(data OverseaAccountResponseBody) WQAccount {
 
 /* Korea Investment API Request - Oversea Account */
 
-func (c *KISClient) overseaAccountHeader() OverseaAccountRequestHeader {
+func (c *KISClient) overseaAccountHeader() OverseaGetRequestHeader {
 	var trId string
 
 	switch c.isTest {
@@ -200,7 +180,7 @@ func (c *KISClient) overseaAccountHeader() OverseaAccountRequestHeader {
 
 	uid := uuid.New()
 
-	header := OverseaAccountRequestHeader{
+	header := OverseaGetRequestHeader{
 		RESTAuth:              c.UserInfoREST,
 		Authorization:         c.getBearerAuthorization(),
 		ContentType:           "application/json; charset=utf-8",
@@ -221,21 +201,19 @@ func (c *KISClient) overseaAccountBody(exchange, currency string) OverseaAccount
 
 	result.AccountNumber = acnt[:8]
 	result.AccountProductCode = acnt[8:]
-	result.OverseaExchange = string(exchange)     // Test
-	result.TransactionCurrency = string(currency) // Test
+	result.OverseaExchange = string(exchange) // Test
+	result.Currency = string(currency)        // Test
 
 	return result
 }
 
-func (c *KISClient) overseaAccount(exchange, currency string) (OverseaAccountResponseHeader, OverseaAccountResponseBody, error) {
+func (c *KISClient) overseaAccount(exchange, currency string) (OverseaGetResponseHeader, OverseaAccountResponseBody, error) {
 
 	header := c.overseaAccountHeader()
 	query := c.overseaAccountBody(exchange, currency)
 
 	resultHeader, resultBody, err := overseaGETwHB[
-		OverseaAccountRequestHeader,
 		OverseaAccountRequestQuery,
-		OverseaAccountResponseHeader,
 		OverseaAccountResponseBody,
 	](
 		header,
