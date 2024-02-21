@@ -28,9 +28,7 @@ type OverseaPeriodProfitRequestQuery struct {
 }
 
 type OverseaPeriodProfitResponseBody struct {
-	ReturnCode  string `json:"rt_cd"` // 0 if success
-	MessageCode string `json:"msg_cd"`
-	Message     string `json:"msg1"`
+	OverseaGetResponseBodyBase
 
 	// Details of profit
 	TradeDateTxInfo []OverseaPeriodProfitResponseBodyOutputOne `json:"Output1"`
@@ -66,7 +64,25 @@ type OverseaPeriodProfitResponseBodyOutputTwo struct {
 }
 
 func (c *KISClient) TxOverseaPeriodProfitUS() (interface{}, error) {
-	_, body, err := c.OverseaPeriodProfit(string(UnitedStates), string(UnitedStatesDollar))
+	_, body, err := c.OverseaPeriodProfit(UnitedStatesFx)
+	if err != nil {
+		return body, err
+	}
+
+	return body, nil
+}
+
+func (c *KISClient) TxOverseaPeriodProfitNasdaq() (interface{}, error) {
+	_, body, err := c.OverseaPeriodProfit(NasdaqFx)
+	if err != nil {
+		return body, err
+	}
+
+	return body, nil
+}
+
+func (c *KISClient) TxOverseaPeriodProfitNYSE() (interface{}, error) {
+	_, body, err := c.OverseaPeriodProfit(NewYorkExchangeFx)
 	if err != nil {
 		return body, err
 	}
@@ -75,7 +91,7 @@ func (c *KISClient) TxOverseaPeriodProfitUS() (interface{}, error) {
 }
 
 func (c *KISClient) TxOverseaPeriodProfitJP() (interface{}, error) {
-	_, body, err := c.OverseaPeriodProfit(string(Tokyo), string(JapaneseYen))
+	_, body, err := c.OverseaPeriodProfit(JapanFx)
 	if err != nil {
 		return body, err
 	}
@@ -84,7 +100,16 @@ func (c *KISClient) TxOverseaPeriodProfitJP() (interface{}, error) {
 }
 
 func (c *KISClient) TxOverseaPeriodProfitCN() (interface{}, error) {
-	_, body, err := c.OverseaPeriodProfit(string(Shanghai), string(ChineseYuan))
+	_, body, err := c.OverseaPeriodProfit(ShanghaiFx)
+	if err != nil {
+		return body, err
+	}
+
+	return body, nil
+}
+
+func (c *KISClient) TxOverseaPeriodProfitHK() (interface{}, error) {
+	_, body, err := c.OverseaPeriodProfit(HongKongFx)
 	if err != nil {
 		return body, err
 	}
@@ -116,7 +141,7 @@ func (c *KISClient) overseaPeriodProfitHeader() OverseaGetRequestHeader {
 	return header
 }
 
-func (c *KISClient) overseaPeriodProfitBody(exchange, currency string, pastdays int) OverseaPeriodProfitRequestQuery {
+func (c *KISClient) overseaPeriodProfitBody(exchange OverseaExchange, currency OverseaCurrency, pastdays int) OverseaPeriodProfitRequestQuery {
 
 	// Account number
 	acnt := os.Getenv("__KIS_ACCOUNT_NUM")
@@ -140,9 +165,9 @@ func (c *KISClient) overseaPeriodProfitBody(exchange, currency string, pastdays 
 	return result
 }
 
-func (c *KISClient) OverseaPeriodProfit(exchange, currency string) (OverseaGetResponseHeader, OverseaPeriodProfitResponseBody, error) {
+func (c *KISClient) OverseaPeriodProfit(oversea OverseaExchangeCountry) (OverseaGetResponseHeader, OverseaPeriodProfitResponseBody, error) {
 	header := c.overseaPeriodProfitHeader()
-	query := c.overseaPeriodProfitBody(exchange, currency, 90)
+	query := c.overseaPeriodProfitBody(oversea.Exchange, oversea.Currency, 90)
 
 	resultHeader, resultBody, err := overseaGETwHB[
 		OverseaPeriodProfitRequestQuery,

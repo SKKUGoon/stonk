@@ -14,7 +14,30 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-const WebsocketUrl string = "/oauth2/Approval"
+// Websocket
+const (
+	RealTimeExecutedKor       = "ws://ops.koreainvestment.com:21000"
+	RealTimeExecutedKorScheme = "ws"
+	RealTimeExecutedKorHost   = "ops.koreainvestment.com:21000"
+
+	TestRealTimeExecutedKor       = "ws://ops.koreainvestment.com:31000"
+	TestRealTimeExecutedKorScheme = "ws"
+	TestRealTimeExecutedKorHost   = "ops.koreainvestment.com:31000"
+)
+
+const (
+	// Body `tr_id` value for stream request
+
+	KorOrderExecutedTxID     = "H0STCNT0"
+	OverseaOrderExecutedTxID = "HDFSCNT0"
+)
+
+const (
+	WebsocketUrl = "/oauth2/Approval"
+
+	KorOrderExecutedUrl     = "/tryitout/H0STCNT0"
+	OverseaOrderExecutedUrl = "/tryitout/HDFSCNT0"
+)
 
 var websocketPath map[string]string = map[string]string{
 	// Korean market service

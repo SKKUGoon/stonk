@@ -3,6 +3,7 @@ package util
 import (
 	"log"
 	"os"
+	"strconv"
 
 	"github.com/google/uuid"
 )
@@ -80,7 +81,7 @@ func (c *KISClient) overseaCashBody(exchange OverseaExchange, unitPrice int, uni
 		AccountNumber:         acnt[:8],
 		AccountProductCode:    acnt[8:],
 		OverseaExchange:       string(exchange),
-		OverseaOrderUnitPrice: string(unitPrice),
+		OverseaOrderUnitPrice: strconv.Itoa(unitPrice),
 		ItemCode:              unitItem, // Famous stock
 	}
 

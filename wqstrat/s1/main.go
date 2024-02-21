@@ -25,6 +25,8 @@ func main() {
 	client.SetTx(client.TxOverseaAccountJP)
 	client.SetTx(client.TxOverseaAccountUS)
 
+	client.SetTx(client.TxOverseaPresentAccountUS)
+
 	// fmt.Println("wait 12 seconds first, should execute JP, and US only")
 	// time.Sleep(time.Second * 12)
 
@@ -32,7 +34,10 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to execute client function queue. Queue is not cleaned: %v", err)
 	}
-	fmt.Println(data)
-}
 
-//
+	log.Println("data output")
+	for k, v := range data {
+		fmt.Println(k, v)
+	}
+	log.Println("data output end")
+}

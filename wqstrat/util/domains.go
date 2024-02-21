@@ -12,29 +12,6 @@ const (
 	TestKoreaInvestREST = "https://openapivts.koreainvestment.com:29443"
 )
 
-// Websocket
-const (
-	RealTimeExecutedKor       = "ws://ops.koreainvestment.com:21000"
-	RealTimeExecutedKorScheme = "ws"
-	RealTimeExecutedKorHost   = "ops.koreainvestment.com:21000"
-
-	TestRealTimeExecutedKor       = "ws://ops.koreainvestment.com:31000"
-	TestRealTimeExecutedKorScheme = "ws"
-	TestRealTimeExecutedKorHost   = "ops.koreainvestment.com:31000"
-)
-
-const (
-	KorOrderExecutedUrl     = "/tryitout/H0STCNT0"
-	OverseaOrderExecutedUrl = "/tryitout/HDFSCNT0"
-)
-
-const (
-	// Body `tr_id` value for stream request
-
-	KorOrderExecutedTxID     = "H0STCNT0"
-	OverseaOrderExecutedTxID = "HDFSCNT0"
-)
-
 func whereToRequest(test bool, url string) string {
 	switch test {
 	case false:
@@ -77,6 +54,12 @@ type OverseaGetResponseHeader struct {
 	TransactionID           string `json:"tr_id"`
 	TransactionIsContinuous string `json:"tr_cont"`
 	GlobalTransactionUUID   string `json:"gt_uid"`
+}
+
+type OverseaGetResponseBodyBase struct {
+	ReturnCode  string `json:"rt_cd"` // 0 if success
+	MessageCode string `json:"msg_cd"`
+	Message     string `json:"msg1"`
 }
 
 // Oversea

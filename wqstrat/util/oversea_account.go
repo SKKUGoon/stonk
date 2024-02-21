@@ -9,36 +9,6 @@ import (
 
 const OverseaAccountUrl string = "/uapi/overseas-stock/v1/trading/inquire-balance"
 
-type OverseaExchange string
-type OverseaCurrency string
-
-const (
-	TestNasdaq               OverseaExchange = "NASD"
-	TestNewYorkStockExchange OverseaExchange = "NYSE"
-	TestAmericanExchange     OverseaExchange = "AMEX"
-
-	UnitedStates         OverseaExchange = "NASD"
-	Nasdaq               OverseaExchange = "NAS"
-	NewYorkStockExchange OverseaExchange = "NYSE"
-	AmericanExchange     OverseaExchange = "AMEX"
-
-	// Test and main are same
-	HongKong OverseaExchange = "SEHK"
-	Shanghai OverseaExchange = "SHAA"
-	ShenZhen OverseaExchange = "SZAA"
-	Tokyo    OverseaExchange = "TKSE"
-	Hanoi    OverseaExchange = "HASE"
-	Hochimin OverseaExchange = "VNSE"
-)
-
-const (
-	UnitedStatesDollar OverseaCurrency = "USD"
-	HongKongDollar     OverseaCurrency = "HKD"
-	ChineseYuan        OverseaCurrency = "CNY"
-	JapaneseYen        OverseaCurrency = "JPY"
-	VietnameseDong     OverseaCurrency = "VND"
-)
-
 type OverseaAccountRequestQuery struct {
 	AccountNumber      string `json:"CANO"`
 	AccountProductCode string `json:"ACNT_PRDT_CD"`
@@ -51,9 +21,7 @@ type OverseaAccountRequestQuery struct {
 }
 
 type OverseaAccountResponseBody struct {
-	ReturnCode       string `json:"rt_cd"` // 0 if success
-	MessageCode      string `json:"msg_cd"`
-	Message          string `json:"msg1"`
+	OverseaGetResponseBodyBase
 	ContextAreaFK200 string `json:"ctx_area_fk200"`
 	ContextAreaNK200 string `json:"ctx_area_nk200"`
 
@@ -113,7 +81,37 @@ type accountStockInfo struct {
 }
 
 func (c *KISClient) TxOverseaAccountUS() (interface{}, error) {
-	_, body, err := c.overseaAccount(string(UnitedStates), string(UnitedStatesDollar))
+	_, body, err := c.overseaAccount(UnitedStatesFx)
+	if err != nil {
+		return body, err
+	}
+
+	// Not using header information for now
+	return accountInfoTable(body), nil
+}
+
+func (c *KISClient) TxOverseaAccountNasdaq() (interface{}, error) {
+	_, body, err := c.overseaAccount(NasdaqFx)
+	if err != nil {
+		return body, err
+	}
+
+	// Not using header information for now
+	return accountInfoTable(body), nil
+}
+
+func (c *KISClient) TxOverseaAccountNYSE() (interface{}, error) {
+	_, body, err := c.overseaAccount(NewYorkExchangeFx)
+	if err != nil {
+		return body, err
+	}
+
+	// Not using header information for now
+	return accountInfoTable(body), nil
+}
+
+func (c *KISClient) TxOverseaAccountAMEX() (interface{}, error) {
+	_, body, err := c.overseaAccount(AmexFx)
 	if err != nil {
 		return body, err
 	}
@@ -123,7 +121,7 @@ func (c *KISClient) TxOverseaAccountUS() (interface{}, error) {
 }
 
 func (c *KISClient) TxOverseaAccountJP() (interface{}, error) {
-	_, body, err := c.overseaAccount(string(Tokyo), string(JapaneseYen))
+	_, body, err := c.overseaAccount(JapanFx)
 	if err != nil {
 		return body, err
 	}
@@ -133,7 +131,17 @@ func (c *KISClient) TxOverseaAccountJP() (interface{}, error) {
 }
 
 func (c *KISClient) TxOverseaAccountCN() (interface{}, error) {
-	_, body, err := c.overseaAccount(string(Shanghai), string(ChineseYuan))
+	_, body, err := c.overseaAccount(ShanghaiFx)
+	if err != nil {
+		return body, err
+	}
+
+	// Not using header information for now
+	return accountInfoTable(body), nil
+}
+
+func (c *KISClient) TxOverseaAccountHK() (interface{}, error) {
+	_, body, err := c.overseaAccount(HongKongFx)
 	if err != nil {
 		return body, err
 	}
@@ -190,7 +198,7 @@ func (c *KISClient) overseaAccountHeader() OverseaGetRequestHeader {
 	return header
 }
 
-func (c *KISClient) overseaAccountBody(exchange, currency string) OverseaAccountRequestQuery {
+func (c *KISClient) overseaAccountBody(exchange OverseaExchange, currency OverseaCurrency) OverseaAccountRequestQuery {
 	result := OverseaAccountRequestQuery{}
 
 	// Account number
@@ -201,16 +209,15 @@ func (c *KISClient) overseaAccountBody(exchange, currency string) OverseaAccount
 
 	result.AccountNumber = acnt[:8]
 	result.AccountProductCode = acnt[8:]
-	result.OverseaExchange = string(exchange) // Test
-	result.Currency = string(currency)        // Test
+	result.OverseaExchange = string(exchange)
+	result.Currency = string(currency)
 
 	return result
 }
 
-func (c *KISClient) overseaAccount(exchange, currency string) (OverseaGetResponseHeader, OverseaAccountResponseBody, error) {
-
+func (c *KISClient) overseaAccount(oversea OverseaExchangeCountry) (OverseaGetResponseHeader, OverseaAccountResponseBody, error) {
 	header := c.overseaAccountHeader()
-	query := c.overseaAccountBody(exchange, currency)
+	query := c.overseaAccountBody(oversea.Exchange, oversea.Currency)
 
 	resultHeader, resultBody, err := overseaGETwHB[
 		OverseaAccountRequestQuery,
