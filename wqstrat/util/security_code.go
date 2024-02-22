@@ -148,7 +148,7 @@ func (c *KISClient) setSecurityCode(secCd OAuthSecurityCodeResponse) {
 
 func (c *KISClient) isOAuthKeyAvailable() bool {
 	now := time.Now()
-
+	fmt.Println("now", now, "keyExpire", c.OAuthKeyExpire, c.OAuthKey)
 	// No OAuth key requested in the first place. Emit error
 	if c.OAuthKey == "" {
 		color.Red("OAuthKey missing")
