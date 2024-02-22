@@ -1,6 +1,7 @@
 package util
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -33,7 +34,7 @@ func structToMap(s interface{}) (map[string]string, error) {
 	return mapFromStruct, err
 }
 
-type OverseaGetRequestHeader struct {
+type OverseaRequestHeader struct {
 	RESTAuth
 	ContentType           string `json:"content-type,omitempty"`
 	Authorization         string `json:"authorization"`
@@ -49,7 +50,7 @@ type OverseaGetRequestHeader struct {
 	GlobalTransactionUUID string `json:"gt_uid,omitempty"`
 }
 
-type OverseaGetResponseHeader struct {
+type OverseaResponseHeader struct {
 	ContentType             string `json:"content-type"`
 	TransactionID           string `json:"tr_id"`
 	TransactionIsContinuous string `json:"tr_cont"`
@@ -66,13 +67,13 @@ type OverseaGetResponseBodyBase struct {
 // REST "GET" Request with
 // RequestBody[T] and ResponseBody[U]
 func overseaGETwHB[T any, U any](
-	requestheader OverseaGetRequestHeader,
+	requestheader OverseaRequestHeader,
 	requestquery T,
 	test bool,
 	url string,
-) (OverseaGetResponseHeader, U, error) {
+) (OverseaResponseHeader, U, error) {
 	var (
-		resultHeader OverseaGetResponseHeader
+		resultHeader OverseaResponseHeader
 		resultBody   U
 
 		headerMap map[string]string
@@ -104,6 +105,54 @@ func overseaGETwHB[T any, U any](
 			q.Add(k, v)
 		}
 		req.URL.RawQuery = q.Encode()
+	}
+
+	client := &http.Client{}
+	response, err := client.Do(req)
+	if err != nil {
+		return resultHeader, resultBody, err
+	}
+	defer response.Body.Close()
+
+	if bytes, err := io.ReadAll(response.Body); err != nil {
+		return resultHeader, resultBody, err
+	} else {
+		err = json.Unmarshal(bytes, &resultBody)
+		return resultHeader, resultBody, err
+	}
+}
+
+func overseaPOSTwHB[T any, U any](
+	requestheader OverseaRequestHeader,
+	requestbody T,
+	test bool,
+	url string,
+) (OverseaResponseHeader, U, error) {
+	var (
+		resultHeader OverseaResponseHeader
+		resultBody   U
+
+		headerMap map[string]string
+	)
+
+	bstr, err := json.Marshal(requestbody)
+	if err != nil {
+		return resultHeader, resultBody, err
+	}
+
+	req, err := http.NewRequest("POST", whereToRequest(test, url), bytes.NewReader(bstr))
+	if err != nil {
+		return resultHeader, resultBody, err
+	}
+
+	// Set Header
+	headerMap, err = structToMap(requestheader)
+	if err != nil {
+		return resultHeader, resultBody, err
+	} else {
+		for k, v := range headerMap {
+			req.Header.Set(k, v)
+		}
 	}
 
 	client := &http.Client{}

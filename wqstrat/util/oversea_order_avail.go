@@ -47,7 +47,7 @@ func (c *KISClient) TxOverseaCashUS() (interface{}, error) {
 	return body, nil
 }
 
-func (c *KISClient) overseaCashHeader() OverseaGetRequestHeader {
+func (c *KISClient) overseaCashHeader() OverseaRequestHeader {
 	var trId string
 
 	switch c.isTest {
@@ -60,7 +60,7 @@ func (c *KISClient) overseaCashHeader() OverseaGetRequestHeader {
 
 	uid := uuid.New()
 
-	header := OverseaGetRequestHeader{
+	header := OverseaRequestHeader{
 		RESTAuth:              c.UserInfoREST,
 		Authorization:         c.getBearerAuthorization(),
 		ContentType:           "application/json; charset=utf-8",
@@ -88,7 +88,7 @@ func (c *KISClient) overseaCashBody(exchange OverseaExchange, unitPrice int, uni
 	return result
 }
 
-func (c *KISClient) overseaCash(exchange OverseaExchange, unitPrice int, unitItem string) (OverseaGetResponseHeader, OverseaCashResponseBody, error) {
+func (c *KISClient) overseaCash(exchange OverseaExchange, unitPrice int, unitItem string) (OverseaResponseHeader, OverseaCashResponseBody, error) {
 	header := c.overseaCashHeader()
 	query := c.overseaCashBody(exchange, unitPrice, unitItem)
 

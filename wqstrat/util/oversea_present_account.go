@@ -131,7 +131,7 @@ func (c *KISClient) TxOverseaPresentAccountJP() (interface{}, error) {
 
 /* Oversea Account - Based on execution (Present time) */
 
-func (c *KISClient) overseaPresentAccountHeader() OverseaGetRequestHeader {
+func (c *KISClient) overseaPresentAccountHeader() OverseaRequestHeader {
 	var trId string
 
 	switch c.isTest {
@@ -143,7 +143,7 @@ func (c *KISClient) overseaPresentAccountHeader() OverseaGetRequestHeader {
 
 	uid := uuid.New()
 
-	header := OverseaGetRequestHeader{
+	header := OverseaRequestHeader{
 		RESTAuth:              c.UserInfoREST,
 		Authorization:         c.getBearerAuthorization(),
 		ContentType:           "application/json; charset=utf-8",
@@ -172,7 +172,7 @@ func (c *KISClient) overseaPresentAccountBody(natl OverseaNation, exchangeCode O
 	return result
 }
 
-func (c *KISClient) overseaPresentAccount(oversea OverseaExchangeCountry) (OverseaGetResponseHeader, OverseaPresentAccountResponseBody, error) {
+func (c *KISClient) overseaPresentAccount(oversea OverseaExchangeCountry) (OverseaResponseHeader, OverseaPresentAccountResponseBody, error) {
 	header := c.overseaPresentAccountHeader()
 	query := c.overseaPresentAccountBody(oversea.NationCode, oversea.ExchangeCode)
 

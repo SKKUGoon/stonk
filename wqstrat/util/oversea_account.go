@@ -176,7 +176,7 @@ func accountInfoTable(data OverseaAccountResponseBody) WQAccount {
 
 /* Korea Investment API Request - Oversea Account */
 
-func (c *KISClient) overseaAccountHeader() OverseaGetRequestHeader {
+func (c *KISClient) overseaAccountHeader() OverseaRequestHeader {
 	var trId string
 
 	switch c.isTest {
@@ -188,7 +188,7 @@ func (c *KISClient) overseaAccountHeader() OverseaGetRequestHeader {
 
 	uid := uuid.New()
 
-	header := OverseaGetRequestHeader{
+	header := OverseaRequestHeader{
 		RESTAuth:              c.UserInfoREST,
 		Authorization:         c.getBearerAuthorization(),
 		ContentType:           "application/json; charset=utf-8",
@@ -215,7 +215,7 @@ func (c *KISClient) overseaAccountBody(exchange OverseaExchange, currency Overse
 	return result
 }
 
-func (c *KISClient) overseaAccount(oversea OverseaExchangeCountry) (OverseaGetResponseHeader, OverseaAccountResponseBody, error) {
+func (c *KISClient) overseaAccount(oversea OverseaExchangeCountry) (OverseaResponseHeader, OverseaAccountResponseBody, error) {
 	header := c.overseaAccountHeader()
 	query := c.overseaAccountBody(oversea.Exchange, oversea.Currency)
 

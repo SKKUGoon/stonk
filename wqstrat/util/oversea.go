@@ -4,6 +4,8 @@ type OverseaNation string
 type OverseaExchange string
 type OverseaCurrency string
 type OverseaExchangeCode string
+type OverseaOrderTxID string
+type OverseaOrderType string
 
 const (
 	All                OverseaNation = "000"
@@ -66,6 +68,18 @@ const (
 )
 
 const (
+	USLimitPurchase           OverseaOrderType = "00"
+	USPremarketLimitPurchase  OverseaOrderType = "32"
+	USPostmarketLimitPurchase OverseaOrderType = "34"
+
+	USLimitSell            OverseaOrderType = "00"
+	USPremarketMarketSell  OverseaOrderType = "31"
+	USPremarketLimitSell   OverseaOrderType = "32"
+	USPostMarketMarketSell OverseaOrderType = "33"
+	USPostMarketLimitSell  OverseaOrderType = "34"
+)
+
+const (
 	UnitedStatesBuyOrder  OverseaOrderTxID = "TTTT1002U"
 	UnitedStatesSellOrder OverseaOrderTxID = "TTTT1006U"
 
@@ -112,7 +126,40 @@ type OverseaExchangeCountry struct {
 		BuyOrder  OverseaOrderTxID
 		SellOrder OverseaOrderTxID
 	}
-	isTest bool
+	precisionPointQty int
+	precisionPointPrc int
+	isTest            bool
+}
+
+var FxOrderType = map[string]OverseaOrderType{
+	"us-buy-limit":      USLimitPurchase,
+	"uspre-buy-limit":   USPremarketLimitPurchase,
+	"uspost-buy-limit":  USPostmarketLimitPurchase,
+	"us-sell-limit":     USLimitSell,
+	"uspre-sell-market": USPremarketMarketSell,
+	"uspre-sell-limit":  USPremarketLimitSell,
+	"uspost-sell-limit": USPostMarketLimitSell,
+}
+
+var fxOrderTypePurchase = map[string]OverseaOrderType{
+	"us-buy-limit":     USLimitPurchase,
+	"uspre-buy-limit":  USPremarketLimitPurchase,
+	"uspost-buy-limit": USPostmarketLimitPurchase,
+}
+
+var fxOrderTypeSell = map[string]OverseaOrderType{
+	"us-sell-limit":     USLimitSell,
+	"uspre-sell-market": USPremarketMarketSell,
+	"uspre-sell-limit":  USPremarketLimitSell,
+	"uspost-sell-limit": USPostMarketLimitSell,
+}
+
+var FxExchMap = map[string]OverseaExchangeCountry{
+	"us-us":     UnitedStatesFx,
+	"us-nasdaq": NasdaqFx,
+	"us-nyse":   NewYorkExchangeFx,
+	"us-amex":   AmexFx,
+	"jp-jp":     JapanFx,
 }
 
 var UnitedStatesFx = OverseaExchangeCountry{
@@ -127,7 +174,9 @@ var UnitedStatesFx = OverseaExchangeCountry{
 		BuyOrder:  UnitedStatesBuyOrder,
 		SellOrder: UnitedStatesSellOrder,
 	},
-	isTest: false,
+	precisionPointQty: 0,
+	precisionPointPrc: 2,
+	isTest:            false,
 }
 
 var NasdaqFx = OverseaExchangeCountry{
@@ -142,7 +191,9 @@ var NasdaqFx = OverseaExchangeCountry{
 		BuyOrder:  UnitedStatesBuyOrder,
 		SellOrder: UnitedStatesSellOrder,
 	},
-	isTest: false,
+	precisionPointQty: 0,
+	precisionPointPrc: 2,
+	isTest:            false,
 }
 
 var NewYorkExchangeFx = OverseaExchangeCountry{
@@ -157,7 +208,9 @@ var NewYorkExchangeFx = OverseaExchangeCountry{
 		BuyOrder:  UnitedStatesBuyOrder,
 		SellOrder: UnitedStatesSellOrder,
 	},
-	isTest: false,
+	precisionPointQty: 0,
+	precisionPointPrc: 2,
+	isTest:            false,
 }
 
 var AmexFx = OverseaExchangeCountry{
@@ -172,7 +225,9 @@ var AmexFx = OverseaExchangeCountry{
 		BuyOrder:  UnitedStatesBuyOrder,
 		SellOrder: UnitedStatesSellOrder,
 	},
-	isTest: false,
+	precisionPointQty: 0,
+	precisionPointPrc: 2,
+	isTest:            false,
 }
 
 var JapanFx = OverseaExchangeCountry{

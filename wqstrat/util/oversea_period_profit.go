@@ -119,7 +119,7 @@ func (c *KISClient) TxOverseaPeriodProfitHK() (interface{}, error) {
 
 /* Korea Investment API Request - Oversea Account Period profit */
 
-func (c *KISClient) overseaPeriodProfitHeader() OverseaGetRequestHeader {
+func (c *KISClient) overseaPeriodProfitHeader() OverseaRequestHeader {
 	var trId string
 
 	// Oversea account's period profit does not offer test
@@ -131,7 +131,7 @@ func (c *KISClient) overseaPeriodProfitHeader() OverseaGetRequestHeader {
 
 	uid := uuid.New()
 
-	header := OverseaGetRequestHeader{
+	header := OverseaRequestHeader{
 		RESTAuth:              c.UserInfoREST,
 		Authorization:         c.getBearerAuthorization(), // No Bearer?
 		ContentType:           "application/json; charset=utf-8",
@@ -165,7 +165,7 @@ func (c *KISClient) overseaPeriodProfitBody(exchange OverseaExchange, currency O
 	return result
 }
 
-func (c *KISClient) OverseaPeriodProfit(oversea OverseaExchangeCountry) (OverseaGetResponseHeader, OverseaPeriodProfitResponseBody, error) {
+func (c *KISClient) OverseaPeriodProfit(oversea OverseaExchangeCountry) (OverseaResponseHeader, OverseaPeriodProfitResponseBody, error) {
 	header := c.overseaPeriodProfitHeader()
 	query := c.overseaPeriodProfitBody(oversea.Exchange, oversea.Currency, 90)
 
