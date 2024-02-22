@@ -39,6 +39,8 @@ func Engine(state string) *Business {
 func (b *Business) MountService(group *gin.RouterGroup) {
 	group.GET("/account/:region", b.accountOversea)
 	group.GET("/periodpnl/:region", b.periodProfitOversea)
+
+	group.POST("/order/oversea", b.overseaOrder)
 }
 
 func (b *Business) Shutdown() {
