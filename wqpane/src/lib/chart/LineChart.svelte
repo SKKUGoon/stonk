@@ -2,7 +2,7 @@
   import { Chart } from "chart.js/auto";
   import { onMount } from "svelte";
 	import type { periodProfit } from "./type";
-	import { generateHistory } from "./chartData";
+	import { generateHistory } from "./lineChartData";
 
   
   export let pp: { [ key: string ]: periodProfit };
@@ -30,9 +30,15 @@
     let hasToday: boolean = false;
     for (let trade of accntTS.Output1) {
       // Realized profit amount
-      chartValues.data.push(+trade.ovrs_rlzt_pfls_amt);
-      chartValues.label.push(trade.trad_day);
-
+      if (chartValues.label.includes(trade.trad_day)) {
+        chartValues.data = [ 
+          ...chartValues.data.slice(0, -2), 
+          chartValues.data.at(-1)! + +trade.ovrs_rlzt_pfls_amt
+        ];
+      } else {
+        chartValues.data.push(+trade.ovrs_rlzt_pfls_amt);
+        chartValues.label.push(trade.trad_day);
+      }
       if (trade.trad_day === nowString) {
         hasToday = true;
       }
