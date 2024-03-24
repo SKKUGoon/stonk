@@ -9,6 +9,7 @@
 
   let accntCol: { name: string }[] = [];
   let accntDat: string[][] = [];
+
   let stockCol: { name: string }[] = [];
   let stockDat: string[][] = [];
 

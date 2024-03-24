@@ -4,6 +4,7 @@
   import { onMount } from "svelte";
   import type { account } from "$lib/table/type";
 
+
   const unitedStatesAccountUrl = "http://0.0.0.0:10501/api/v1/account/us";
   const unitedStatesPnl30 = "http://0.0.0.0:10501/api/v1/periodpnl/us";
 

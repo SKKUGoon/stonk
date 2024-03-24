@@ -65,7 +65,6 @@
     }
   } 
 
-
   onMount(async () => {
     if (canvasElement) {
       chart = new Chart(
