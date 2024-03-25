@@ -5,7 +5,7 @@ go 1.21.5
 require (
 	github.com/gin-gonic/gin v1.9.1
 	github.com/joho/godotenv v1.5.1
-	strategy/util v0.0.0
+	strategy/kis v0.0.0
 )
 
 require (
@@ -39,4 +39,4 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
-replace strategy/util => ../util
+replace strategy/kis => ../kis

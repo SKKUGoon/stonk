@@ -1,4 +1,4 @@
-package util
+package kis
 
 type OverseaNation string
 type OverseaExchange string

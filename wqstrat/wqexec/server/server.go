@@ -1,14 +1,14 @@
 package api
 
 import (
-	"strategy/util"
+	"strategy/kis"
 
 	"github.com/gin-gonic/gin"
 )
 
 type Business struct {
 	Conn      *gin.Engine
-	Brokerage *util.KISClient
+	Brokerage *kis.KISClient
 }
 
 func setDevState(state string) {
@@ -26,7 +26,7 @@ func Engine(state string) *Business {
 	router := gin.Default()
 	router.Use(corsMiddleware())
 
-	client := util.Default(false)
+	client := kis.Default(false)
 	client.UsePrefixFn(client.SetOAuthSecurityCode)
 	client.UseClosingFn(client.RemoveOAuthSecuritCode)
 

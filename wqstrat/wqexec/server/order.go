@@ -3,13 +3,13 @@ package api
 import (
 	"fmt"
 	"net/http"
-	"strategy/util"
+	"strategy/kis"
 
 	"github.com/gin-gonic/gin"
 )
 
 func (b *Business) overseaOrder(ctx *gin.Context) {
-	orderBody := util.KISOverseaOrder{}
+	orderBody := kis.KISOverseaOrder{}
 	defer func() {
 		data, err := b.Brokerage.ExecOrderOversea()
 		if err != nil {

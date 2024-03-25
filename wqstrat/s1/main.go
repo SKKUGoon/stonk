@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
-	util "strategy/util"
+	"strategy/kis"
 
 	"github.com/joho/godotenv"
 )
@@ -11,10 +11,10 @@ import (
 func main() {
 	godotenv.Load(".env")
 
-	client := util.Default(false)
+	client := kis.Default(false)
 
-	testOrder1 := util.CreateFxExcOrder("AAPL", 1, 177, "us-us", "us-buy-limit", true)
-	testOrder2 := util.CreateFxExcOrder("AAPL", 1, 190, "us-us", "us-buy-limit", false)
+	testOrder1 := kis.CreateFxExcOrder("AAPL", 1, 177, "us-us", "us-buy-limit", true)
+	testOrder2 := kis.CreateFxExcOrder("AAPL", 1, 190, "us-us", "us-buy-limit", false)
 
 	defer client.Close()
 

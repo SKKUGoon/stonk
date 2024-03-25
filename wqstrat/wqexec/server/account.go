@@ -7,10 +7,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func (b *Business) accountKorea() {
-
-}
-
 func (b *Business) accountOversea(ctx *gin.Context) {
 	// Client's request parsing
 	region := ctx.Param("region")
