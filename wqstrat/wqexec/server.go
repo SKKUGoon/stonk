@@ -17,13 +17,19 @@ func main() {
 	server := api.Engine("test")
 	defer server.Shutdown()
 
-	kis := server.Conn.Group("/api/v1/")
-	server.MountService(kis)
+	// kis
+	kis := server.Conn.Group("/api/v1/kis")
+	server.MountServiceKIS(kis)
+
+	// binance
+	bnc := server.Conn.Group("/api/v1/bn")
+	server.MountServiceBinance(bnc)
 
 	// Host webserver
 	host := os.Getenv("SERVER_HOST")
 	port := os.Getenv("SERVER_PORT")
-	log.Println(fmt.Sprintf("Hosting on %s:%s", host, port))
+
+	log.Printf("Hosting on %s:%s", host, port)
 	srv := &http.Server{
 		Addr:           fmt.Sprintf("%s:%s", host, port),
 		Handler:        server.Conn,
