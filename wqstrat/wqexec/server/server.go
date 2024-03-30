@@ -53,7 +53,7 @@ func (b *Business) MountServiceKIS(group *gin.RouterGroup) {
 }
 
 func (b *Business) MountServiceBinance(group *gin.RouterGroup) {
-	group.POST("/volatility/:underlying", b.volatilitySurfaceElement)
+	group.POST("/volatility", b.volatilitySurfaceElement)
 }
 
 func (b *Business) Shutdown() {

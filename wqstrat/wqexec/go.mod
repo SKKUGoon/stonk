@@ -5,6 +5,7 @@ go 1.21.5
 require (
 	github.com/gin-gonic/gin v1.9.1
 	github.com/joho/godotenv v1.5.1
+	strategy/binance v0.0.0-00010101000000-000000000000
 	strategy/kis v0.0.0
 )
 
@@ -40,3 +41,5 @@ require (
 )
 
 replace strategy/kis => ../kis
+
+replace strategy/binance => ../binance

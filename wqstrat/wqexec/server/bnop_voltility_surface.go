@@ -18,9 +18,9 @@ type vsBody struct {
 
 type vsElement struct {
 	// Minimum ~ Maximum value
-	RangeX [2]float64 `json:"lenX"` // X Axis: Strike price
-	RangeY [2]float64 `json:"lenY"` // Y Axis: Time (left) to Maturity
-	RangeZ [2]float64 `json:"lenZ"` // Z Axis: Implied Vol
+	RangeX [2]float64 `json:"rangeX"` // X Axis: Strike price
+	RangeY [2]float64 `json:"rangeY"` // Y Axis: Time (left) to Maturity
+	RangeZ [2]float64 `json:"rangeZ"` // Z Axis: Implied Vol
 
 	Data []binance.VolatilitySurfaceMapXY `json:"data"`
 }
@@ -29,32 +29,57 @@ func (b *Business) volatilitySurfaceElement(ctx *gin.Context) {
 	body := vsBody{}
 	ctx.ShouldBindJSON(&body)
 
-	if strings.ToLower(body.Callput) == "call" {
-		callXY, _ := b.Binance.OptionVolatilitySurfaceAxis(binance.OptionCall, body.Underlying)
-		x, y, z := sizeUpVSElement(callXY)
-		d := mapToArr(callXY)
+	var cp binance.OptionCallPut = binance.OptionCall
 
-		ctx.JSON(http.StatusOK, vsElement{
-			RangeX: x,
-			RangeY: y,
-			RangeZ: z,
-			Data:   d,
-		})
-	} else {
-		putXY, _ := b.Binance.OptionVolatilitySurfaceAxis(binance.OptionPut, body.Underlying)
-		x, y, z := sizeUpVSElement(putXY)
-		d := mapToArr(putXY)
-
-		ctx.JSON(http.StatusOK, vsElement{
-			RangeX: x,
-			RangeY: y,
-			RangeZ: z,
-			Data:   d,
-		})
+	switch strings.ToLower(body.Callput) {
+	case "call":
+		cp = binance.OptionCall
+	case "put":
+		cp = binance.OptionPut
+	default:
+		log.Println("wrong body", body)
+		ctx.JSON(http.StatusBadRequest, nil)
 	}
+
+	// Get X, Y Axis - graph construction basis
+	xy, _ := b.Binance.OptionVolatilitySurfaceAxis(cp, body.Underlying)
+
+	// Request for mark price + implied volatility
+	symbols := mapKeyToArr(xy)
+	price, err := b.Binance.MarkPriceAll(symbols...)
+	if err != nil {
+		log.Println("no price", price, err)
+		ctx.JSON(http.StatusInternalServerError, nil)
+	}
+
+	// Insert implied volaility to xy
+	xyz := map[string]binance.VolatilitySurfaceMapXY{}
+	for k, v := range price.(map[string]binance.MarkPriceResponseBody) {
+		xyzElement := xy[k]
+		xyzElement.ImpliedVolatility = v.MarkIV
+		xyz[k] = xyzElement
+	}
+
+	x, y, z := sizeUpVSElement(xyz)
+	d := mapValueToArr(xyz)
+
+	ctx.JSON(http.StatusOK, vsElement{
+		RangeX: x,
+		RangeY: y,
+		RangeZ: z,
+		Data:   d,
+	})
 }
 
-func mapToArr(data map[string]binance.VolatilitySurfaceMapXY) []binance.VolatilitySurfaceMapXY {
+func mapKeyToArr(data map[string]binance.VolatilitySurfaceMapXY) []string {
+	result := []string{}
+	for k := range data {
+		result = append(result, k)
+	}
+	return result
+}
+
+func mapValueToArr(data map[string]binance.VolatilitySurfaceMapXY) []binance.VolatilitySurfaceMapXY {
 	result := []binance.VolatilitySurfaceMapXY{}
 	for _, v := range data {
 		result = append(result, v)
@@ -100,7 +125,7 @@ func sizeUpVSElement(data map[string]binance.VolatilitySurfaceMapXY) ([2]float64
 				minZ = fv
 			}
 			if fv > maxZ {
-				minZ = fv
+				maxZ = fv
 			}
 		}
 	}

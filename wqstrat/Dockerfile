@@ -11,14 +11,17 @@ WORKDIR /app
 RUN apk add --no-cache git
 
 # Copy custom utility package folder
-COPY /util /app/util
+COPY /kis /app/kis
+COPY /binance /app/binance
 
 # Copy other go module file
 COPY /wqexec /app/wqexec
 
-# Change the working direcotory. 
+# Change the working directory. 
 WORKDIR /app/wqexec
 RUN go mod download
+
+# Build the file as wqback
 RUN go build -o wqback .
 
 # Use minimal alpine image to run the compiled binary
