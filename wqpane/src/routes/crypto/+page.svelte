@@ -68,27 +68,65 @@
   <div id={`plotDiv-${asset1}`} style="width: 600px; height: 600px;" />
 </div>
 
-<p>
-    1. Volatility Smile:
-    Shape: A volatility smile occurs when the implied volatility (IV) is higher for options that are in-the-money (ITM) and out-of-the-money (OTM) compared to at-the-money (ATM) options. Graphically, this forms a U-shape or smile.
-    Interpretation: A volatility smile suggests that the market expects the underlying asset to experience significant volatility, with a non-zero probability of large price swings in either direction. This can be due to upcoming news, events, or general market uncertainty.
-    Derivable Information: Indicates a leptokurtic distribution of asset returns, suggesting that the market is pricing in the possibility of significant moves away from the current price.
-</p>
-<p>
-    2. Volatility Smirk/Skew:
-    Shape: A smirk or skew is observed when OTM puts (lower strike prices) have higher IVs compared to ATM and OTM calls (higher strike prices), making the curve skew to one side.
-    Interpretation: This indicates that the market is anticipating a potential downside more than an upside, often seen in equity markets due to the asymmetric risk of a market crash or correction.
-    Derivable Information: Reflects market fear or bearish sentiment, pricing in higher probabilities of downward movements. This can influence hedging strategies, suggesting a demand for downside protection.
-</p>
-<p>
-    3. Flat Surface:
-    Shape: Implied volatilities are relatively uniform across strikes and maturities.
-    Interpretation: Suggests a market consensus that the underlying asset will experience volatility consistent with historical levels, without expecting significant shifts.
-    Derivable Information: Indicates a market in equilibrium or with balanced expectations. Arbitrage opportunities may be limited.
-</p>
-<p>
-    4. Forward Skew:
-    Shape: The implied volatility increases for options with higher strike prices.
-    Interpretation: This is less common but can occur in markets or for assets where there's a greater expectation of an upward move (e.g., commodities experiencing supply shortages).
-    Derivable Information: Reflects bullish sentiment or specific market conditions driving expectations of price increases.
-</p>
+<div class="section">
+  <div class="section-title">Volatility Smile:</div>
+  <div class="section-content">
+    <p><strong>Shape:</strong> A U-shape or smile occurs when the implied volatility (IV) is higher for options that are in-the-money (ITM) and out-of-the-money (OTM) compared to at-the-money (ATM) options.</p>
+    <p><strong>Interpretation:</strong> Suggests significant expected volatility with a probability of large price swings in either direction, possibly due to upcoming news, events, or general market uncertainty.</p>
+    <p><strong>Derivable Information:</strong> Indicates a leptokurtic distribution of asset returns, suggesting the market is pricing in significant moves away from the current price.</p>
+  </div>
+</div>
+  
+<div class="section">
+  <div class="section-title">Volatility Smirk/Skew:</div>
+  <div class="section-content">
+    <p><strong>Shape:</strong> Observed when OTM puts have higher IVs compared to ATM and OTM calls, causing the curve to skew to one side.</p>
+    <p><strong>Interpretation:</strong> Indicates anticipation of potential downside, reflecting market fear or bearish sentiment, often seen in equity markets.</p>
+    <p><strong>Derivable Information:</strong> Suggests higher probabilities of downward movements, influencing hedging strategies and indicating a demand for downside protection.</p>
+  </div>
+</div>
+  
+<div class="section">
+  <div class="section-title">Flat Surface:</div>
+  <div class="section-content">
+    <p><strong>Shape:</strong> Implied volatilities are relatively uniform across strikes and maturities.</p>
+    <p><strong>Interpretation:</strong> Suggests a consensus that the underlying asset will experience volatility consistent with historical levels without significant shifts.</p>
+    <p><strong>Derivable Information:</strong> Indicates a market in equilibrium or with balanced expectations, where arbitrage opportunities may be limited.</p>
+  </div>
+</div>
+  
+<div class="section">
+  <div class="section-title">Forward Skew:</div>
+  <div class="section-content">
+    <p><strong>Shape:</strong> Implied volatility increases for options with higher strike prices.</p>
+    <p><strong>Interpretation:</strong> Less common, occurring in markets or assets expected to move upwards, such as commodities facing supply shortages.</p>
+    <p><strong>Derivable Information:</strong> Reflects bullish sentiment or market conditions driving expectations of price increases.</p>
+  </div>
+</div>
+
+<style>
+  .section {
+    margin-bottom: 20px;
+  }
+
+  .section-title {
+    color: #333;
+    font-size: 20px;
+    margin-bottom: 10px;
+  }
+
+  .section-content {
+    background-color: #f9f9f9;
+    border-left: 5px solid #007bff;
+    padding: 10px 20px;
+    margin: 10px 0;
+  }
+
+  .section-content p {
+    margin: 10px 0;
+  }
+  
+  .section-content strong {
+    color: #000;
+  }
+</style>
