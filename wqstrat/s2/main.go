@@ -17,7 +17,7 @@ func main() {
 	client.Connectivity()
 	client.ServerTime()
 
-	testOptionVSXYZ(client)
+	testOptionContract(client)
 }
 
 func testMarkPrice(c *binance.BinanceOptionClient) {
@@ -27,8 +27,7 @@ func testMarkPrice(c *binance.BinanceOptionClient) {
 }
 
 func testOptionContract(c *binance.BinanceOptionClient) {
-	const testUnderlying = "BTCUSDT"
-	contractResult, _ := c.OptionContractsInfo(testUnderlying)
+	contractResult, _ := c.OptionContractsInfo()
 	jstr, err := json.Marshal(contractResult)
 	fmt.Println("testOptionContract", string(jstr), err)
 }
