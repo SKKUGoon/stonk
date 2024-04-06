@@ -4,7 +4,7 @@ import (
 	"log"
 	"math"
 	"net/http"
-	"strategy/binance"
+	"strategy/coin/binance"
 	"strconv"
 	"strings"
 

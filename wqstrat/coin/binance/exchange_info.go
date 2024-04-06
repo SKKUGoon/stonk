@@ -1,6 +1,6 @@
 package binance
 
-func (c *BinanceOptionClient) OptionSymbolInfo(underlyings ...string) (interface{}, error) {
+func (c *BinanceClient) OptionSymbolInfo(underlyings ...string) (interface{}, error) {
 	info, err := get[OptionInfo](ExchangeInfoUrl, nil)
 	if err != nil {
 		return nil, err
@@ -28,7 +28,7 @@ func (c *BinanceOptionClient) OptionSymbolInfo(underlyings ...string) (interface
 	}
 }
 
-func (c *BinanceOptionClient) OptionSymbol(callPut OptionCallPut, underlyings ...string) (map[string]bool, error) {
+func (c *BinanceClient) OptionSymbol(callPut OptionCallPut, underlyings ...string) (map[string]bool, error) {
 	info, err := get[OptionInfo](ExchangeInfoUrl, nil)
 	if err != nil {
 		return nil, err

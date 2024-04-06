@@ -7,7 +7,7 @@ type VolatilitySurfaceMapXY struct {
 }
 
 // Single Asset's volatility surface elements
-func (c *BinanceOptionClient) OptionVolatilitySurfaceAxis(
+func (c *BinanceClient) OptionVolatilitySurfaceAxis(
 	callPut OptionCallPut,
 	underlying string,
 ) (map[string]VolatilitySurfaceMapXY, error) {

@@ -3,7 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"strategy/binance"
+	"strategy/coin/binance"
 
 	"github.com/joho/godotenv"
 )
@@ -11,7 +11,7 @@ import (
 func main() {
 	godotenv.Load(".env")
 
-	client := binance.Default(true)
+	client := binance.DefaultBinance(true)
 
 	// Test Connectivity
 	client.Connectivity()
@@ -20,31 +20,31 @@ func main() {
 	testOptionContract(client)
 }
 
-func testMarkPrice(c *binance.BinanceOptionClient) {
+func testMarkPrice(c *binance.BinanceClient) {
 	testAsset := "BTC-240402-70750-C"
 	markPrice, err := c.MarkPrice(testAsset)
 	fmt.Println("testMarkPrice", markPrice, err)
 }
 
-func testOptionContract(c *binance.BinanceOptionClient) {
+func testOptionContract(c *binance.BinanceClient) {
 	contractResult, _ := c.OptionContractsInfo()
 	jstr, err := json.Marshal(contractResult)
 	fmt.Println("testOptionContract", string(jstr), err)
 }
 
-func testOptionRateLimit(c *binance.BinanceOptionClient) {
+func testOptionRateLimit(c *binance.BinanceClient) {
 	rateLimit, _ := c.OptionRateLimits()
 	jstr, err := json.Marshal(rateLimit)
 	fmt.Println("testOptionRateLimit", string(jstr), err)
 }
 
-func testOptionAsset(c *binance.BinanceOptionClient) {
+func testOptionAsset(c *binance.BinanceClient) {
 	assetResult, _ := c.OptionAssetsInfo()
 	jstr, err := json.Marshal(assetResult)
 	fmt.Println("testOptionAsset", string(jstr), err)
 }
 
-func testOptionSymbol(c *binance.BinanceOptionClient) {
+func testOptionSymbol(c *binance.BinanceClient) {
 	const testUnderlying = "BTCUSDT"
 	symbolResult, _ := c.OptionSymbolInfo(testUnderlying)
 	for _, i := range symbolResult.([]interface{}) {
@@ -52,7 +52,7 @@ func testOptionSymbol(c *binance.BinanceOptionClient) {
 	}
 }
 
-func testOptionSymbolMapCall(c *binance.BinanceOptionClient) {
+func testOptionSymbolMapCall(c *binance.BinanceClient) {
 	const testUnderlying = "BTCUSDT"
 	symbolResult, _ := c.OptionSymbol(binance.OptionCall, testUnderlying)
 	for k := range symbolResult {
@@ -60,7 +60,7 @@ func testOptionSymbolMapCall(c *binance.BinanceOptionClient) {
 	}
 }
 
-func testOptionSymbolMapPut(c *binance.BinanceOptionClient) {
+func testOptionSymbolMapPut(c *binance.BinanceClient) {
 	const testUnderlying = "BTCUSDT"
 	symbolResult, _ := c.OptionSymbol(binance.OptionPut, testUnderlying)
 	for k := range symbolResult {
@@ -68,7 +68,7 @@ func testOptionSymbolMapPut(c *binance.BinanceOptionClient) {
 	}
 }
 
-func testOptionVSXYMap(c *binance.BinanceOptionClient) {
+func testOptionVSXYMap(c *binance.BinanceClient) {
 	const testUnderlying = "BTCUSDT"
 	axisXY, _ := c.OptionVolatilitySurfaceAxis(binance.OptionCall, testUnderlying)
 	for k, v := range axisXY {
@@ -76,7 +76,7 @@ func testOptionVSXYMap(c *binance.BinanceOptionClient) {
 	}
 }
 
-func testOptionVSXYZ(c *binance.BinanceOptionClient) {
+func testOptionVSXYZ(c *binance.BinanceClient) {
 	const testUnderlying = "BTCUSDT"
 	axisXY, _ := c.OptionVolatilitySurfaceAxis(binance.OptionCall, testUnderlying)
 

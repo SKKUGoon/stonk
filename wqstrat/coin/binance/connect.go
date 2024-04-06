@@ -72,21 +72,21 @@ type OptionInfo struct {
 }
 
 // Simple request. No Transactioning - Required
-func (c *BinanceOptionClient) Connectivity() (OptionInfo, error) {
+func (c *BinanceClient) Connectivity() (OptionInfo, error) {
 	return get[OptionInfo](ConnectivityUrl, nil)
 }
 
-func (c *BinanceOptionClient) ServerTime() (OptionInfo, error) {
+func (c *BinanceClient) ServerTime() (OptionInfo, error) {
 	return get[OptionInfo](ServerTimeUrl, nil)
 }
 
-func (c *BinanceOptionClient) ExchangeInfo() (OptionInfo, error) {
+func (c *BinanceClient) ExchangeInfo() (OptionInfo, error) {
 	return get[OptionInfo](ExchangeInfoUrl, nil)
 }
 
 /* Derived api calls */
 
-func (c *BinanceOptionClient) OptionContractsInfo(underlyings ...string) (interface{}, error) {
+func (c *BinanceClient) OptionContractsInfo(underlyings ...string) (interface{}, error) {
 	info, err := get[OptionInfo](ExchangeInfoUrl, nil)
 	if err != nil {
 		return nil, err
@@ -114,7 +114,7 @@ func (c *BinanceOptionClient) OptionContractsInfo(underlyings ...string) (interf
 	}
 }
 
-func (c *BinanceOptionClient) OptionAssetsInfo() (interface{}, error) {
+func (c *BinanceClient) OptionAssetsInfo() (interface{}, error) {
 	info, err := get[OptionInfo](ExchangeInfoUrl, nil)
 	if err != nil {
 		return nil, err
@@ -124,7 +124,7 @@ func (c *BinanceOptionClient) OptionAssetsInfo() (interface{}, error) {
 	return info.OptionAssets, nil
 }
 
-func (c *BinanceOptionClient) OptionRateLimits() (interface{}, error) {
+func (c *BinanceClient) OptionRateLimits() (interface{}, error) {
 	info, err := get[OptionInfo](ExchangeInfoUrl, nil)
 	if err != nil {
 		return nil, err

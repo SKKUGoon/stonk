@@ -1,7 +1,7 @@
 package api
 
 import (
-	"strategy/binance"
+	"strategy/coin/binance"
 	"strategy/kis"
 
 	"github.com/gin-gonic/gin"
@@ -12,7 +12,7 @@ type Business struct {
 
 	// API Clients
 	Brokerage *kis.KISClient
-	Binance   *binance.BinanceOptionClient
+	Binance   *binance.BinanceClient
 }
 
 func setDevState(state string) {
@@ -36,7 +36,7 @@ func Engine(state string) *Business {
 	kc.UseClosingFn(kc.RemoveOAuthSecuritCode)
 
 	// Binance - Option
-	bc := binance.Default(false)
+	bc := binance.DefaultBinance(false)
 
 	return &Business{
 		Conn:      router,

@@ -20,7 +20,7 @@ type MarkPriceResponseBody struct {
 	LowPriceLimit  string `json:"lowPriceLimit"`  // Current lowest sell price
 }
 
-func (c *BinanceOptionClient) MarkPriceAll(symbols ...string) (interface{}, error) {
+func (c *BinanceClient) MarkPriceAll(symbols ...string) (interface{}, error) {
 	if len(symbols) <= 0 {
 		return get[[]MarkPriceResponseBody](MarkPriceUrl, nil)
 	}
@@ -46,7 +46,7 @@ func (c *BinanceOptionClient) MarkPriceAll(symbols ...string) (interface{}, erro
 	return result, nil
 }
 
-func (c *BinanceOptionClient) MarkPrice(symbol string) (interface{}, error) {
+func (c *BinanceClient) MarkPrice(symbol string) (interface{}, error) {
 	asset := MarkPriceRequestQuery{Symbol: symbol}
 	return get[[]MarkPriceResponseBody](MarkPriceUrl, asset)
 }
