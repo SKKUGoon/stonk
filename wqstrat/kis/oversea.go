@@ -1,9 +1,12 @@
 package kis
 
 type OverseaNation string
+
 type OverseaExchange string
-type OverseaCurrency string
 type OverseaExchangeCode string
+type OverseaExchangeEngCode string
+
+type OverseaCurrency string
 type OverseaOrderTxID string
 type OverseaOrderType string
 
@@ -38,6 +41,27 @@ const (
 	HongKongCode    OverseaExchangeCode = "01"
 	HongKongCNYCode OverseaExchangeCode = "02"
 	HongKongUSDCode OverseaExchangeCode = "03"
+)
+
+const (
+	NasdaqEngCode             OverseaExchangeEngCode = "NAS"
+	NasdaqDayEngCode          OverseaExchangeEngCode = "BAQ"
+	AmexEngCode               OverseaExchangeEngCode = "AMS"
+	AmexDayEngCode            OverseaExchangeEngCode = "BAA"
+	NewYorkExchangeEngCode    OverseaExchangeEngCode = "NYS"
+	NewYorkExchangeDayEngCode OverseaExchangeEngCode = "BAY"
+
+	JapanEngCode OverseaExchangeEngCode = "TSE"
+
+	ShanghaiEndCode      OverseaExchangeEngCode = "SHS"
+	ShanghaiIndexEngCode OverseaExchangeEngCode = "SHI"
+	ShenZhenEngCode      OverseaExchangeEngCode = "SZS"
+	ShenZhenIndexEngCode OverseaExchangeEngCode = "SZI"
+
+	HanoiEngCode    OverseaExchangeEngCode = "HNX"
+	HochiminEngCode OverseaExchangeEngCode = "HSX"
+
+	HongKongEngCode OverseaExchangeCode = "HKS"
 )
 
 const (

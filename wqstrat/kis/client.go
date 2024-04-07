@@ -38,6 +38,9 @@ type KISClient struct {
 	// Orders
 	overseaOrders []KISOverseaOrder
 
+	// Data
+	// overseaData []DataFunc
+
 	isTest bool
 
 	OAuthKey       string
