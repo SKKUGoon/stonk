@@ -1,1 +1,1 @@
-KEY = "7183862899:AAE4KcchwlJie1G3UNDNVJxdCyOcp6CYkQM"
+myKEY = ""
