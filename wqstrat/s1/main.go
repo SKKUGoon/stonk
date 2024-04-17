@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"strategy/kis"
@@ -13,49 +14,23 @@ func main() {
 
 	client := kis.Default(false)
 
-	testOrder1 := kis.CreateFxExcOrder("AAPL", 1, 177, "us-us", "us-buy-limit", true)
-	testOrder2 := kis.CreateFxExcOrder("AAPL", 1, 190, "us-us", "us-buy-limit", false)
-
 	defer client.Close()
 
 	// Make first transaction
 	client.UsePrefixFn(client.SetOAuthSecurityCode)
 	client.UseClosingFn(client.RemoveOAuthSecuritCode)
 
-	client.SetTx(client.TxOverseaPeriodProfitUS)
-	client.Exec()
+	client.SetDataInfoTx(kis.KISDataRequest{
+		StockSymbol: "AAPL", // US0378331005
+		ExchangeKey: "us-nasdaq",
+	})
 
-	// // Make second transaction
-	client.SetTx(client.TxOverseaAccountJP)
-	client.SetTx(client.TxOverseaAccountUS)
-
-	client.SetTx(client.TxOverseaPresentAccountUS)
-
-	// fmt.Println("wait 12 seconds first, should execute JP, and US only")
-	// time.Sleep(time.Second * 12)
-
-	data, err := client.Exec()
+	obj, err := client.ExecDataInfo()
 	if err != nil {
-		log.Fatalf("failed to execute client function queue. Queue is not cleaned: %v", err)
+		log.Println(err)
 	}
-	log.Println("data output")
-	for k, v := range data {
-		fmt.Println(k, v)
-	}
-
-	client.SetOrderTx(*testOrder1)
-	client.SetOrderTx(*testOrder2)
-
-	client.ShowOrderBacklog()
-
-	data, err = client.ExecOrderOversea()
-	if err != nil {
-		log.Fatalf("failed to execute orders. Queue is not cleared")
-	}
-	log.Println("data output")
-	for k, v := range data {
-		fmt.Println(k, v)
-	}
+	bstr, _ := json.Marshal(obj)
+	fmt.Println(string(bstr))
 
 	log.Println("data output end")
 }

@@ -8,9 +8,9 @@ import (
 const OverseaOrderUrl string = "/uapi/overseas-stock/v1/trading/order"
 
 type OverseaOrderRequestBody struct {
-	AccountNumber      string `json:"CANO"`
-	AccountProductCode string `json:"ACNT_PRDT_CD"`
-	OverseaExchange    string `json:"OVRS_EXCG_CD"`
+	AccountNumber      string          `json:"CANO"`
+	AccountProductCode string          `json:"ACNT_PRDT_CD"`
+	OverseaExchange    OverseaExchange `json:"OVRS_EXCG_CD"`
 
 	StockCode          string `json:"PDNO"`
 	OrderQuantity      string `json:"ORD_QTY"`
@@ -68,7 +68,7 @@ func (c *KISClient) overseaOrderBody(order KISOverseaOrder) OverseaOrderRequestB
 	result := OverseaOrderRequestBody{
 		AccountNumber:      acnt[:8],
 		AccountProductCode: acnt[8:],
-		OverseaExchange:    string(order.orderExchange.Exchange),
+		OverseaExchange:    order.orderExchange.ExchangeInfo.ExchangeEng4Code,
 		StockCode:          order.Stock,
 		OrderQuantity:      order.QtyStr,
 		OrderPricePerStock: order.PrcStr,

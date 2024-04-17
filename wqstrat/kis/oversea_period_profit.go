@@ -14,13 +14,13 @@ type OverseaPeriodProfitRequestQuery struct {
 	AccountNumber      string `json:"CANO"`
 	AccountProductCode string `json:"ACNT_PRDT_CD"`
 
-	OverseaExchange string `json:"OVRS_EXCG_CD"`
-	NationCode      string `json:"NATN_CD"`
-	CurrencyCode    string `json:"CRCY_CD"`
-	ProductNum      string `json:"PDNO"`
-	StartDate       string `json:"INQR_STRT_DT"`      // YYYYMMDD
-	EndDate         string `json:"INQR_END_DT"`       // YYYYMMDD
-	WonOrForeign    string `json:"WCRC_FRCR_DVSN_CD"` // 01 외화 02 원화
+	OverseaExchange OverseaExchange `json:"OVRS_EXCG_CD"`
+	NationCode      string          `json:"NATN_CD"`
+	CurrencyCode    OverseaCurrency `json:"CRCY_CD"`
+	ProductNum      string          `json:"PDNO"`
+	StartDate       string          `json:"INQR_STRT_DT"`      // YYYYMMDD
+	EndDate         string          `json:"INQR_END_DT"`       // YYYYMMDD
+	WonOrForeign    string          `json:"WCRC_FRCR_DVSN_CD"` // 01 외화 02 원화
 
 	// Not Implemented yet
 	ContextAreaFK200 string `json:"CTX_AREA_FK200"`
@@ -100,7 +100,7 @@ func (c *KISClient) TxOverseaPeriodProfitJP() (interface{}, error) {
 }
 
 func (c *KISClient) TxOverseaPeriodProfitCN() (interface{}, error) {
-	_, body, err := c.OverseaPeriodProfit(ShanghaiFx)
+	_, body, err := c.OverseaPeriodProfit(ShanghaiAFx)
 	if err != nil {
 		return body, err
 	}
@@ -155,8 +155,8 @@ func (c *KISClient) overseaPeriodProfitBody(exchange OverseaExchange, currency O
 	result := OverseaPeriodProfitRequestQuery{
 		AccountNumber:      acnt[:8],
 		AccountProductCode: acnt[8:],
-		OverseaExchange:    string(exchange),
-		CurrencyCode:       string(currency),
+		OverseaExchange:    exchange,
+		CurrencyCode:       currency,
 		WonOrForeign:       "01",
 		StartDate:          past,
 		EndDate:            now,
@@ -167,7 +167,7 @@ func (c *KISClient) overseaPeriodProfitBody(exchange OverseaExchange, currency O
 
 func (c *KISClient) OverseaPeriodProfit(oversea OverseaExchangeCountry) (OverseaResponseHeader, OverseaPeriodProfitResponseBody, error) {
 	header := c.overseaPeriodProfitHeader()
-	query := c.overseaPeriodProfitBody(oversea.Exchange, oversea.Currency, 90)
+	query := c.overseaPeriodProfitBody(oversea.ExchangeInfo.ExchangeEng4Code, oversea.Currency, 90)
 
 	resultHeader, resultBody, err := overseaGETwHB[
 		OverseaPeriodProfitRequestQuery,

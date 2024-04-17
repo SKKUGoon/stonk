@@ -1,6 +1,7 @@
 package kis
 
 import (
+	"fmt"
 	"log"
 	"strconv"
 )
@@ -34,7 +35,7 @@ func CreateFxExcOrder(
 	exec string,
 	buysell OverseaOrderBuySell, // Buy if true, Sell if false
 ) *KISOverseaOrder {
-	ex, ok := FxExchMap[exch]
+	ex, ok := FxExchangeMap[OverseaFxExKey(exch)]
 	if !ok {
 		log.Panicln("no exchange found")
 	}
@@ -72,4 +73,43 @@ func (o *KISOverseaOrder) CreateFxExcOrder() *KISOverseaOrder {
 		log.Fatalf("%s not appropriate order exec type", o.OrderExecType)
 		return nil
 	}
+}
+
+func (c *KISClient) SetOrderTx(orderSheet KISOverseaOrder) {
+	c.overseaOrders = append(c.overseaOrders, orderSheet)
+}
+
+func (c *KISClient) ShowOrderBacklog() map[string]interface{} {
+	for i, ord := range c.overseaOrders {
+		fmt.Println(i, ord)
+	}
+	return nil
+}
+
+func (c *KISClient) ExecOrderOversea() (map[string]interface{}, error) {
+	// Execute all prefix functions - inside the queue
+	// Prefix functions are made with `UsePrefixFn`
+	for i, pf := range c.preHandlers {
+		_, err := pf()
+		if err != nil {
+			fmt.Printf("err during prefix handler %v: %v\n", i, err)
+			return nil, err
+		}
+	}
+
+	// Execute all orders
+	payload := map[string]interface{}{}
+	for i, ord := range c.overseaOrders {
+		_, body, err := c.overseaOrder(ord)
+		if err != nil {
+			fmt.Printf("err during executing order %v(%s): %v\n", i, ord.Stock, err)
+			return nil, err
+		} else {
+			payload[fmt.Sprintf("payload%v", i)] = body
+		}
+	}
+
+	// Re-initialize handlers
+	c.overseaOrders = []KISOverseaOrder{}
+	return payload, nil
 }

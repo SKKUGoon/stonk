@@ -1,5 +1,7 @@
 package kis
 
+import "github.com/google/uuid"
+
 const OverseaQuotePriceUrl = "/uapi/overseas-price/v1/quotations/price"
 
 type OverseaQuotePriceQuery struct {
@@ -23,13 +25,17 @@ type OverseaQuotePriceResponseBodyOutputOne struct {
 	Orderable     string `json:"ordy"`
 }
 
-func (c *KISClient) TxOverseaQuotePriceNasdaq(symbol string) (interface{}, error) {
-	_, body, err := c.overseaQuotePrice(NasdaqEngCode, symbol)
-	if err != nil {
-		return body, err
-	}
+func (c *KISClient) overseaQuotePriceHeader() OverseaRequestHeader {
+	uid := uuid.New()
 
-	return body, nil
+	header := OverseaRequestHeader{
+		RESTAuth:              c.UserInfoREST,
+		Authorization:         c.getBearerAuthorization(), // No Bearer?
+		ContentType:           "application/json; charset=utf-8",
+		TransactionID:         "HHDFS00000300",
+		GlobalTransactionUUID: uid.String(),
+	}
+	return header
 }
 
 func (c *KISClient) overseaQuotePriceBody(exchange OverseaExchangeEngCode, symbol string) OverseaQuotePriceQuery {
@@ -41,7 +47,7 @@ func (c *KISClient) overseaQuotePriceBody(exchange OverseaExchangeEngCode, symbo
 }
 
 func (c *KISClient) overseaQuotePrice(exchange OverseaExchangeEngCode, symbol string) (OverseaResponseHeader, OverseaQuotePriceResponseBody, error) {
-	header := c.overseaPresentAccountHeader()
+	header := c.overseaQuotePriceHeader()
 	query := c.overseaQuotePriceBody(exchange, symbol)
 
 	return overseaGETwHB[

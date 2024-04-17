@@ -10,10 +10,10 @@ import (
 const OverseaPresentAccountUrl string = "/uapi/overseas-stock/v1/trading/inquire-present-balance"
 
 type OverseaPresentAccountRequestQuery struct {
-	AccountNumber      string `json:"CANO"`
-	AccountProductCode string `json:"ACNT_PRDT_CD"`
-	WonOrForeign       string `json:"WCRC_FRCR_DVSN_CD"` // 01 외화 02 원화
-	NationCode         string `json:"NATN_CD"`           // 000 전체 840 미국 344 홍콩 156 중국 392 일본 704 베트남
+	AccountNumber      string        `json:"CANO"`
+	AccountProductCode string        `json:"ACNT_PRDT_CD"`
+	WonOrForeign       string        `json:"WCRC_FRCR_DVSN_CD"` // 01 외화 02 원화
+	NationCode         OverseaNation `json:"NATN_CD"`           // 000 전체 840 미국 344 홍콩 156 중국 392 일본 704 베트남
 
 	// Request body NATN_CD
 	// * NATN_CD 000:
@@ -33,8 +33,8 @@ type OverseaPresentAccountRequestQuery struct {
 	//
 	// * NATN_CD 344:
 	//   01 홍콩 02 홍콩CNY 03 홍콩USD
-	MarketCode string `json:"TR_MKET_CD"`
-	StockType  string `json:"INQR_DVSN_CD"` // 00 전체 01 일반해외주식 02 미니스탁
+	MarketCode OverseaExchangeCode `json:"TR_MKET_CD"`
+	StockType  string              `json:"INQR_DVSN_CD"` // 00 전체 01 일반해외주식 02 미니스탁
 }
 
 type OverseaPresentAccountResponseBody struct {
@@ -167,14 +167,14 @@ func (c *KISClient) overseaPresentAccountBody(natl OverseaNation, exchangeCode O
 	result.AccountProductCode = acnt[8:]
 	result.WonOrForeign = "01"
 	result.StockType = "00"
-	result.NationCode = string(natl)
-	result.MarketCode = string(exchangeCode)
+	result.NationCode = natl
+	result.MarketCode = exchangeCode
 	return result
 }
 
 func (c *KISClient) overseaPresentAccount(oversea OverseaExchangeCountry) (OverseaResponseHeader, OverseaPresentAccountResponseBody, error) {
 	header := c.overseaPresentAccountHeader()
-	query := c.overseaPresentAccountBody(oversea.NationCode, oversea.ExchangeCode)
+	query := c.overseaPresentAccountBody(oversea.ExchangeInfo.NationCode, oversea.ExchangeInfo.ExchangeNum2Code)
 
 	resultHeader, resultBody, err := overseaGETwHB[
 		OverseaPresentAccountRequestQuery,

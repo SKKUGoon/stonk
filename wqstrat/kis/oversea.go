@@ -5,10 +5,15 @@ type OverseaNation string
 type OverseaExchange string
 type OverseaExchangeCode string
 type OverseaExchangeEngCode string
+type OverseaProductTypeCode string
 
 type OverseaCurrency string
 type OverseaOrderTxID string
 type OverseaOrderType string
+
+type OverseaFxExKey string
+
+/* Exchange info */
 
 const (
 	All                OverseaNation = "000"
@@ -53,7 +58,7 @@ const (
 
 	JapanEngCode OverseaExchangeEngCode = "TSE"
 
-	ShanghaiEndCode      OverseaExchangeEngCode = "SHS"
+	ShanghaiEngCode      OverseaExchangeEngCode = "SHS"
 	ShanghaiIndexEngCode OverseaExchangeEngCode = "SHI"
 	ShenZhenEngCode      OverseaExchangeEngCode = "SZS"
 	ShenZhenIndexEngCode OverseaExchangeEngCode = "SZI"
@@ -61,7 +66,7 @@ const (
 	HanoiEngCode    OverseaExchangeEngCode = "HNX"
 	HochiminEngCode OverseaExchangeEngCode = "HSX"
 
-	HongKongEngCode OverseaExchangeCode = "HKS"
+	HongKongEngCode OverseaExchangeEngCode = "HKS"
 )
 
 const (
@@ -84,12 +89,33 @@ const (
 )
 
 const (
+	NasdaqProdCode               OverseaProductTypeCode = "512" // 미국 나스닥
+	NewYorkStockExchangeProdCode OverseaProductTypeCode = "513" // 미국 뉴욕
+	AmexProdCode                 OverseaProductTypeCode = "529" // 미국 아멕스
+
+	JapanProdCode       OverseaProductTypeCode = "515" // 일본
+	HongKongProdCode    OverseaProductTypeCode = "501" // 홍콩
+	HongKongCnyProdCode OverseaProductTypeCode = "543" // 홍콩CNY
+	HongKongUsdProdCode OverseaProductTypeCode = "558" // 홍콩USD
+
+	HanoiProdCode    OverseaProductTypeCode = "507" // 베트남 하노이
+	HochiminProdCode OverseaProductTypeCode = "508" // 베트남 호치민
+
+	ShanghaiAProdCode OverseaProductTypeCode = "551" // 중국 상해A
+	ShenZhenAProdCode OverseaProductTypeCode = "552" // 중국 심천A
+)
+
+/* Currency info */
+
+const (
 	UnitedStatesDollar OverseaCurrency = "USD"
 	HongKongDollar     OverseaCurrency = "HKD"
 	ChineseYuan        OverseaCurrency = "CNY"
 	JapaneseYen        OverseaCurrency = "JPY"
 	VietnameseDong     OverseaCurrency = "VND"
 )
+
+/* Order info */
 
 const (
 	USLimitPurchase           OverseaOrderType = "00"
@@ -141,18 +167,32 @@ const (
 	TestVietnameSellOrder OverseaOrderTxID = "VTTS0310U"
 )
 
+type OverseaExchangeInfo struct {
+	NationCode           OverseaNation
+	ExchangeNum2Code     OverseaExchangeCode
+	ExchangeNum3ProdCode OverseaProductTypeCode
+
+	ExchangeEng3Code OverseaExchangeEngCode
+	ExchangeEng4Code OverseaExchange
+}
+
 type OverseaExchangeCountry struct {
-	NationCode   OverseaNation
-	Exchange     OverseaExchange
-	ExchangeCode OverseaExchangeCode
-	Currency     OverseaCurrency
-	Order        struct {
+	// Exchange code info
+	ExchangeInfo OverseaExchangeInfo
+
+	// Currency code
+	Currency OverseaCurrency
+
+	// Order code
+	Order struct {
 		BuyOrder  OverseaOrderTxID
 		SellOrder OverseaOrderTxID
 	}
 	precisionPointQty int
 	precisionPointPrc int
-	isTest            bool
+
+	// Debug
+	isTest bool
 }
 
 var FxOrderType = map[string]OverseaOrderType{
@@ -178,19 +218,60 @@ var fxOrderTypeSell = map[string]OverseaOrderType{
 	"uspost-sell-limit": USPostMarketLimitSell,
 }
 
-var FxExchMap = map[string]OverseaExchangeCountry{
-	"us-us":     UnitedStatesFx,
-	"us-nasdaq": NasdaqFx,
-	"us-nyse":   NewYorkExchangeFx,
-	"us-amex":   AmexFx,
-	"jp-jp":     JapanFx,
+/* One source of truth */
+
+// Keys for map
+const (
+	USDUnitedStates         OverseaFxExKey = "us-us"
+	USDNasdaq               OverseaFxExKey = "us-nasdaq"
+	USDNewYorkStockExchange OverseaFxExKey = "us-nyse"
+	USDAmericanExchange     OverseaFxExKey = "us-amex"
+	JPYTokyo                OverseaFxExKey = "jp-jp"
+	ALLHongKong             OverseaFxExKey = "all-hk"
+	CNYShanghaiA            OverseaFxExKey = "cn-shanghai-a"
+	CNYShanghaiB            OverseaFxExKey = "cn-shanghai-b"
+	CNYShenZhenA            OverseaFxExKey = "cn-shenzhen-a"
+	CNYShenZhenB            OverseaFxExKey = "cn-shenzhen-b"
+	VNDHochimin             OverseaFxExKey = "vn-hochimin"
+	VNDHanoi                OverseaFxExKey = "vn-hanoi"
+)
+
+var FxExchangeMap = map[OverseaFxExKey]OverseaExchangeCountry{
+	// United States
+	USDUnitedStates:         UnitedStatesFx,
+	USDNasdaq:               NasdaqFx,
+	USDNewYorkStockExchange: NewYorkExchangeFx,
+	USDAmericanExchange:     AmexFx,
+
+	// Japan
+	JPYTokyo: JapanFx,
+
+	// HongKong
+	ALLHongKong: HongKongFx,
+
+	// China
+	CNYShanghaiA: ShanghaiAFx,
+	CNYShanghaiB: ShanghaiBFx,
+	CNYShenZhenA: ShenZhenAFx,
+	CNYShenZhenB: ShenZhenBFx,
+
+	// Vietnam
+	VNDHanoi:    HanoiFx,
+	VNDHochimin: HochiminFx,
 }
 
 var UnitedStatesFx = OverseaExchangeCountry{
-	NationCode:   NationUnitedStates,
-	Exchange:     UnitedStates,
-	ExchangeCode: UnitedStatesCode,
-	Currency:     UnitedStatesDollar,
+	// Exchange code info
+	ExchangeInfo: OverseaExchangeInfo{
+		NationCode:       NationUnitedStates,
+		ExchangeNum2Code: UnitedStatesCode,
+		ExchangeEng4Code: UnitedStates,
+	},
+
+	// Currency code
+	Currency: UnitedStatesDollar,
+
+	// Order code
 	Order: struct {
 		BuyOrder  OverseaOrderTxID
 		SellOrder OverseaOrderTxID
@@ -200,14 +281,21 @@ var UnitedStatesFx = OverseaExchangeCountry{
 	},
 	precisionPointQty: 0,
 	precisionPointPrc: 2,
-	isTest:            false,
+
+	// Debug
+	isTest: false,
 }
 
 var NasdaqFx = OverseaExchangeCountry{
-	NationCode:   NationUnitedStates,
-	Exchange:     Nasdaq,
-	ExchangeCode: NasdaqCode,
-	Currency:     UnitedStatesDollar,
+	ExchangeInfo: OverseaExchangeInfo{
+		NationCode:           NationUnitedStates,
+		ExchangeNum2Code:     NasdaqCode,
+		ExchangeNum3ProdCode: NasdaqProdCode,
+		ExchangeEng3Code:     NasdaqDayEngCode,
+		ExchangeEng4Code:     Nasdaq,
+	},
+
+	Currency: UnitedStatesDollar,
 	Order: struct {
 		BuyOrder  OverseaOrderTxID
 		SellOrder OverseaOrderTxID
@@ -221,10 +309,15 @@ var NasdaqFx = OverseaExchangeCountry{
 }
 
 var NewYorkExchangeFx = OverseaExchangeCountry{
-	NationCode:   NationUnitedStates,
-	Exchange:     NewYorkStockExchange,
-	ExchangeCode: NewYorkExchangeCode,
-	Currency:     UnitedStatesDollar,
+	ExchangeInfo: OverseaExchangeInfo{
+		NationCode:           NationUnitedStates,
+		ExchangeNum2Code:     NewYorkExchangeCode,
+		ExchangeNum3ProdCode: NewYorkStockExchangeProdCode,
+		ExchangeEng3Code:     NewYorkExchangeEngCode,
+		ExchangeEng4Code:     NewYorkStockExchange,
+	},
+
+	Currency: UnitedStatesDollar,
 	Order: struct {
 		BuyOrder  OverseaOrderTxID
 		SellOrder OverseaOrderTxID
@@ -238,10 +331,15 @@ var NewYorkExchangeFx = OverseaExchangeCountry{
 }
 
 var AmexFx = OverseaExchangeCountry{
-	NationCode:   NationUnitedStates,
-	Exchange:     AmericanExchange,
-	ExchangeCode: AmexCode,
-	Currency:     UnitedStatesDollar,
+	ExchangeInfo: OverseaExchangeInfo{
+		NationCode:           NationUnitedStates,
+		ExchangeNum2Code:     AmexCode,
+		ExchangeNum3ProdCode: AmexProdCode,
+		ExchangeEng3Code:     AmexEngCode,
+		ExchangeEng4Code:     AmericanExchange,
+	},
+
+	Currency: UnitedStatesDollar,
 	Order: struct {
 		BuyOrder  OverseaOrderTxID
 		SellOrder OverseaOrderTxID
@@ -255,10 +353,15 @@ var AmexFx = OverseaExchangeCountry{
 }
 
 var JapanFx = OverseaExchangeCountry{
-	NationCode:   NationJapan,
-	Exchange:     Tokyo,
-	ExchangeCode: JapanCode,
-	Currency:     JapaneseYen,
+	ExchangeInfo: OverseaExchangeInfo{
+		NationCode:           NationJapan,
+		ExchangeNum2Code:     JapanCode,
+		ExchangeNum3ProdCode: JapanProdCode,
+		ExchangeEng3Code:     JapanEngCode,
+		ExchangeEng4Code:     Tokyo,
+	},
+
+	Currency: JapaneseYen,
 	Order: struct {
 		BuyOrder  OverseaOrderTxID
 		SellOrder OverseaOrderTxID
@@ -270,10 +373,15 @@ var JapanFx = OverseaExchangeCountry{
 }
 
 var HongKongFx = OverseaExchangeCountry{
-	NationCode:   NationHongKong,
-	Exchange:     HongKong,
-	ExchangeCode: HongKongCode,
-	Currency:     HongKongDollar,
+	ExchangeInfo: OverseaExchangeInfo{
+		NationCode:           NationHongKong,
+		ExchangeNum2Code:     HongKongCode,
+		ExchangeNum3ProdCode: HongKongProdCode,
+		ExchangeEng3Code:     HongKongEngCode,
+		ExchangeEng4Code:     HongKong,
+	},
+
+	Currency: HongKongDollar,
 	Order: struct {
 		BuyOrder  OverseaOrderTxID
 		SellOrder OverseaOrderTxID
@@ -284,11 +392,16 @@ var HongKongFx = OverseaExchangeCountry{
 	isTest: false,
 }
 
-var ShanghaiFx = OverseaExchangeCountry{
-	NationCode:   NationChina,
-	Exchange:     Shanghai,
-	ExchangeCode: ShanghaiACode,
-	Currency:     ChineseYuan,
+var ShanghaiAFx = OverseaExchangeCountry{
+	ExchangeInfo: OverseaExchangeInfo{
+		NationCode:           NationChina,
+		ExchangeNum2Code:     ShanghaiACode,
+		ExchangeNum3ProdCode: ShanghaiAProdCode,
+		ExchangeEng3Code:     ShanghaiEngCode,
+		ExchangeEng4Code:     Shanghai,
+	},
+
+	Currency: ChineseYuan,
 	Order: struct {
 		BuyOrder  OverseaOrderTxID
 		SellOrder OverseaOrderTxID
@@ -299,11 +412,54 @@ var ShanghaiFx = OverseaExchangeCountry{
 	isTest: false,
 }
 
-var ShenZhenFx = OverseaExchangeCountry{
-	NationCode:   NationChina,
-	Exchange:     ShenZhen,
-	ExchangeCode: ShanghaiACode,
-	Currency:     ChineseYuan,
+var ShanghaiBFx = OverseaExchangeCountry{
+	ExchangeInfo: OverseaExchangeInfo{
+		NationCode:       NationChina,
+		ExchangeNum2Code: ShanghaiBCode,
+		ExchangeEng3Code: ShanghaiEngCode,
+		ExchangeEng4Code: Shanghai,
+	},
+
+	Currency: ChineseYuan,
+	Order: struct {
+		BuyOrder  OverseaOrderTxID
+		SellOrder OverseaOrderTxID
+	}{
+		BuyOrder:  ShanghaiBuyOrder,
+		SellOrder: ShanghaiSellOrder,
+	},
+	isTest: false,
+}
+
+var ShenZhenAFx = OverseaExchangeCountry{
+	ExchangeInfo: OverseaExchangeInfo{
+		NationCode:           NationChina,
+		ExchangeNum2Code:     ShenZhenACode,
+		ExchangeNum3ProdCode: ShenZhenAProdCode,
+		ExchangeEng3Code:     ShenZhenEngCode,
+		ExchangeEng4Code:     ShenZhen,
+	},
+
+	Currency: ChineseYuan,
+	Order: struct {
+		BuyOrder  OverseaOrderTxID
+		SellOrder OverseaOrderTxID
+	}{
+		BuyOrder:  ShenZhenBuyOrder,
+		SellOrder: ShenZhenSellOrder,
+	},
+	isTest: false,
+}
+
+var ShenZhenBFx = OverseaExchangeCountry{
+	ExchangeInfo: OverseaExchangeInfo{
+		NationCode:       NationChina,
+		ExchangeNum2Code: ShenZhenBCode,
+		ExchangeEng3Code: ShenZhenEngCode,
+		ExchangeEng4Code: ShenZhen,
+	},
+
+	Currency: ChineseYuan,
 	Order: struct {
 		BuyOrder  OverseaOrderTxID
 		SellOrder OverseaOrderTxID
@@ -315,10 +471,15 @@ var ShenZhenFx = OverseaExchangeCountry{
 }
 
 var HanoiFx = OverseaExchangeCountry{
-	NationCode:   NationVietnam,
-	Exchange:     Hanoi,
-	ExchangeCode: HanoiCode,
-	Currency:     VietnameseDong,
+	ExchangeInfo: OverseaExchangeInfo{
+		NationCode:           NationVietnam,
+		ExchangeNum2Code:     HanoiCode,
+		ExchangeNum3ProdCode: HanoiProdCode,
+		ExchangeEng3Code:     HanoiEngCode,
+		ExchangeEng4Code:     Hanoi,
+	},
+
+	Currency: VietnameseDong,
 	Order: struct {
 		BuyOrder  OverseaOrderTxID
 		SellOrder OverseaOrderTxID
@@ -330,10 +491,15 @@ var HanoiFx = OverseaExchangeCountry{
 }
 
 var HochiminFx = OverseaExchangeCountry{
-	NationCode:   NationVietnam,
-	Exchange:     Hochimin,
-	ExchangeCode: HochiminCode,
-	Currency:     VietnameseDong,
+	ExchangeInfo: OverseaExchangeInfo{
+		NationCode:           NationVietnam,
+		ExchangeNum2Code:     HochiminCode,
+		ExchangeNum3ProdCode: HochiminProdCode,
+		ExchangeEng3Code:     HochiminEngCode,
+		ExchangeEng4Code:     Hochimin,
+	},
+
+	Currency: VietnameseDong,
 	Order: struct {
 		BuyOrder  OverseaOrderTxID
 		SellOrder OverseaOrderTxID

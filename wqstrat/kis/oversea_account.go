@@ -131,7 +131,7 @@ func (c *KISClient) TxOverseaAccountJP() (interface{}, error) {
 }
 
 func (c *KISClient) TxOverseaAccountCN() (interface{}, error) {
-	_, body, err := c.overseaAccount(ShanghaiFx)
+	_, body, err := c.overseaAccount(ShanghaiAFx)
 	if err != nil {
 		return body, err
 	}
@@ -217,7 +217,7 @@ func (c *KISClient) overseaAccountBody(exchange OverseaExchange, currency Overse
 
 func (c *KISClient) overseaAccount(oversea OverseaExchangeCountry) (OverseaResponseHeader, OverseaAccountResponseBody, error) {
 	header := c.overseaAccountHeader()
-	query := c.overseaAccountBody(oversea.Exchange, oversea.Currency)
+	query := c.overseaAccountBody(oversea.ExchangeInfo.ExchangeEng4Code, oversea.Currency)
 
 	resultHeader, resultBody, err := overseaGETwHB[
 		OverseaAccountRequestQuery,
