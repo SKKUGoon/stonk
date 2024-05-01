@@ -17,7 +17,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    background-color: #fff; /* Example background */
+    background-color: transparent; /* Example background */
     border-bottom: 1px solid #ccc; /* Example border */
     padding: 10px;
     gap: 20px;
@@ -27,8 +27,9 @@
   nav a {
     margin: 0 10px;
     text-decoration: none;
-    color: #333; /* Example text color */
-    font-size: 16px; /* Example font size */
+    color: #fff; /* Example text color */
+    font-size: 30px; /* Example font size */
+    font-weight: bold;
   }
   
   /* Hover state */
