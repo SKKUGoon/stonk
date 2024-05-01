@@ -5,6 +5,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { getOptionData } from './data';
+	import type { VolatilitySurfaceAxis } from './type';
 
   const asset1 = "BTCUSDT";  // Downward trend
 //   const asset1 = "BTCUSDT";
@@ -13,39 +14,76 @@
   const asset4 = "BNBUSDT";
   const asset5 = "DOGEUSDT";
 
-  onMount(async () => {
+  const volsurf = (axisData: VolatilitySurfaceAxis[]): { strikes: number[], t2mats: number[], ivs: number[] } => {
+    const data = axisData.flatMap(d => d.data);
+    const strikes = data.map(p => parseFloat(p.strike));
+    const t2mats = data.map(p => (p.t2mat / 1000) / (365 * 24 * 60 * 60)); // Convert seconds to years
+    const ivs = data.map(p => parseFloat(p.iv));
 
+    return { strikes, t2mats, ivs };
+  }
+
+  onMount(async () => {
     const dataCall = await getOptionData(asset1, "call");
     const dataPut = await getOptionData(asset1, "put");
 
-    const data = [...dataCall.data, ...dataPut.data];
-
-    const strikes = data.map(p => parseFloat(p.strike));
-    const timeToMat = data.map(p => (p.t2mat / 1000) / (365 * 24 * 60 * 60)); // Convert seconds to years
-    const impliedV = data.map(p => parseFloat(p.iv));
+    const { strikes: strikeCall, t2mats: t2matCall, ivs: ivCall } = volsurf([dataCall]);
+    const { strikes: strikePut, t2mats: t2matPut, ivs: ivPut } = volsurf([dataPut]);
+    const { strikes: strikeAll, t2mats: t2matAll, ivs: ivAll } = volsurf([dataCall, dataPut]);
   
-    const plotData = [{
-      x: strikes,
-      y: timeToMat,
-      z: impliedV,
+    const plotDataAll = [
+      {
+        x: strikeCall,
+        y: t2matCall,
+        z: ivCall,
+        mode: 'markers',
+        type: 'scatter3d',
+        marker: {
+          size: 4,
+          color: 'red', // Color by implied volatility
+          opacity: 0.8
+        }
+      },
+      {
+        x: strikePut,
+        y: t2matPut,
+        z: ivPut,
+        mode: 'markers',
+        type: 'scatter3d',
+        marker: {
+          size: 4,
+          color: 'blue', // Color by implied volatility
+          opacity: 0.8
+        }
+      },
+    ];
+
+    const plotDataCall = [{
+      x: strikeCall,
+      y: t2matCall,
+      z: ivCall,
       mode: 'markers',
       type: 'scatter3d',
       marker: {
-        size: 5,
-        color: impliedV, // Color by implied volatility
+        size: 4,
+        color: ivCall, // Color by implied volatility
         colorscale: 'Viridis',
         opacity: 0.8
       }
+    }];
 
-    //   type: 'surface',
-    //   contours: {
-    //     z: {
-    //         show:true,
-    //         usecolormap: true,
-    //         highlightcolor:"#42f462",
-    //         project:{z: true}
-    //     }
-    //   }
+    const plotDataPut = [{
+      x: strikePut,
+      y: t2matPut,
+      z: ivPut,
+      mode: 'markers',
+      type: 'scatter3d',
+      marker: {
+        size: 4,
+        color: ivPut, // Color by implied volatility
+        colorscale: 'Viridis',
+        opacity: 0.8
+      }
     }];
     
     const layout = {
@@ -58,14 +96,21 @@
       autosize: true
     };
 
-	let plotDiv = document.getElementById(`plotDiv-${asset1}`);
-	new Plotly.newPlot(plotDiv, plotData, layout); 
+	let plotDivTotal = document.getElementById(`plotDivTotal-${asset1}`);
+  let plotDivCall = document.getElementById(`plotDivCall-${asset1}`);
+  let plotDivPut = document.getElementById(`plotDivPut-${asset1}`);
+	
+  new Plotly.newPlot(plotDivTotal, plotDataAll, layout); 
+  new Plotly.newPlot(plotDivCall, plotDataCall, layout); 
+  new Plotly.newPlot(plotDivPut, plotDataPut, layout); 
   });
 </script>
 
-<div id="plotly">
+<div class="plotly" id="plotly">
   <!-- Draw plotly chart inside `plotDiv` -->
-  <div id={`plotDiv-${asset1}`} style="width: 600px; height: 600px;" />
+  <div id={`plotDivTotal-${asset1}`} style="width: 600px; height: 600px;" />
+  <div id={`plotDivCall-${asset1}`} style="width: 600px; height: 600px;" />
+  <div id={`plotDivPut-${asset1}`} style="width: 600px; height: 600px;" />
 </div>
 
 <div class="section">
@@ -105,7 +150,14 @@
 </div>
 
 <style>
+  .plotly {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
   .section {
+    margin-top: 20px;
     margin-bottom: 20px;
   }
 

@@ -10,4 +10,13 @@ services:
       - 10501:10501
     env_file:
       - ./wqstrat/wqexec/.env
+
+  # wq:
+  #   build:
+  #     context: ./wqpane
+  #     dockerfile: ./Dockerfile
+  #   restart: unless-stopped
+  #   ports:
+  #     - 5174:10500
+
     

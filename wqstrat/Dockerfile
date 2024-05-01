@@ -12,7 +12,7 @@ RUN apk add --no-cache git
 
 # Copy custom utility package folder
 COPY /kis /app/kis
-COPY /binance /app/binance
+COPY /coin /app/coin
 
 # Copy other go module file
 COPY /wqexec /app/wqexec
